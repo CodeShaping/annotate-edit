@@ -1,0 +1,37 @@
+{
+	"name": "make-real-template",
+	"version": "0.1.0",
+	"private": true,
+	"scripts": {
+		"dev": "next dev",
+		"build": "next build",
+		"start": "next start",
+		"lint": "next lint"
+	},
+	"dependencies": {
+		"@codemirror/merge": "^6.6.3",
+		"@tldraw/tldraw": "^2.0.0-canary.d0f6ef80fcf9",
+		"@uiw/codemirror-themes": "^4.22.2",
+		"@uiw/react-codemirror": "^4.22.2",
+		"codemirror": "^6.0.1",
+		"diff": "^5.2.0",
+		"html2canvas": "^1.4.1",
+		"next": "14.0.3",
+		"react": "^18",
+		"react-codemirror-merge": "^4.22.2",
+		"react-dom": "^18",
+		"tldraw": "^2.2.1"
+	},
+	"devDependencies": {
+		"@codemirror/lang-javascript": "^6.2.2",
+		"@codemirror/lang-python": "^6.1.6",
+		"@types/diff": "^5.2.1",
+		"@types/node": "^20",
+		"@types/react": "^18",
+		"@types/react-dom": "^18",
+		"@x-python/core": "^0.0.10",
+		"eslint": "^8",
+		"eslint-config-next": "14.0.3",
+		"typescript": "^5"
+	}
+}
