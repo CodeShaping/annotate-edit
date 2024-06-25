@@ -26,8 +26,8 @@ export async function makeReal(editor: Editor, apiKey: string, codeShapeId: TLSh
 	})
 
 	if (selectedShapes.length === 0) {
-		// editor.selectAll()
-		throw Error('Please select a shape to generate code from.')
+		editor.selectAll()
+		// throw Error('Please select a shape to generate code from.')
 	}
 
 	onStart()
@@ -60,7 +60,7 @@ export async function makeReal(editor: Editor, apiKey: string, codeShapeId: TLSh
 		scale: 1,
 	})
 	const dataUrl = await blobToBase64(blob!)
-	downloadDataURLAsFile(dataUrl, 'tldraw.png')
+	// downloadDataURLAsFile(dataUrl, 'tldraw.png')
 
 	// Get any previous previews among the selected shapes
 	// const previousPreviews = selectedShapes.filter((shape) => {
