@@ -75,6 +75,13 @@ function InsideOfContext({ newShapeId }: { newShapeId: TLShapeId }) {
 			// remove all shapes
 			// get all shapes
 			const shapes = editor.getCurrentPageShapes() as TLShape[]
+			// unlock all shapes
+			shapes.forEach((shape) => {
+				editor.updateShape({
+					...shape,
+					isLocked: false,
+				})
+			})
 			editor.deleteShapes([...shapes.map((shape) => shape.id)])
 			window.removeEventListener('resize', handleResize)
 		}

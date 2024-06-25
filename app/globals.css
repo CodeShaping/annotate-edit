@@ -66,6 +66,39 @@
 	opacity: 0.95;
 }
 
+.lockCodeEditorButton {
+	background: var(--color-primary);
+	color: white;
+	border: none;
+	font: inherit;
+	font-weight: 600;
+	padding: var(--space-3) var(--space-4);
+	border-radius: var(--radius-2);
+	margin: var(--space-3);
+	cursor: pointer;
+	pointer-events: all;
+}
+.lockCodeEditorButton:hover {
+	opacity: 0.95;
+}
+
+.unlockCodeEditorButton {
+	background: var(--color-primary);
+	color: white;
+	border: none;
+	font: inherit;
+	font-weight: 600;
+	padding: var(--space-3) var(--space-4);
+	border-radius: var(--radius-2);
+	margin: var(--space-3);
+	cursor: pointer;
+	pointer-events: all;
+}
+
+.unlockCodeEditorButton:hover {
+	opacity: 0.95;
+}
+
 .executeCodeButton {
 	background: var(--color-primary);
 	color: white;

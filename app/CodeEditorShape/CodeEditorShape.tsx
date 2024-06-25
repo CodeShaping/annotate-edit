@@ -23,7 +23,7 @@ import CodeMirrorMerge, { CodeMirrorMergeProps } from 'react-codemirror-merge';
 import CodeMirror, { EditorView, EditorState, type ReactCodeMirrorRef } from '@uiw/react-codemirror';
 import { python } from '@codemirror/lang-python';
 import { javascript } from '@codemirror/lang-javascript';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import html2canvas from 'html2canvas';
 import * as JsDiff from "diff";
 import { unifiedMergeView, updateOriginalDoc } from '@codemirror/merge';
@@ -96,6 +96,9 @@ export class CodeEditorShapeUtil extends BaseBoxShapeUtil<CodeEditorShape> {
             }
         }, [isEditing])
 
+        const [isLocked, setIsLocked] = useState(false);
+        const [isDiff, setIsDiff] = useState(false);
+
 
         const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 
@@ -139,7 +142,7 @@ export class CodeEditorShapeUtil extends BaseBoxShapeUtil<CodeEditorShape> {
                         }}
                     />
                 </div>
-                {(shape.props.prevCode !== shape.props.code && isEditing) && (
+                {(isDiff || (shape.props.prevCode !== shape.props.code && isEditing)) && (
                     <div style={{ position: 'absolute', left: '70%', zIndex: 2, width: '50%' }}>
                         <CodeMirror
                             value={shape.props.code}
@@ -209,6 +212,7 @@ export class CodeEditorShapeUtil extends BaseBoxShapeUtil<CodeEditorShape> {
                     </span>
                 </div>
             </div>
+
         )
     }
 

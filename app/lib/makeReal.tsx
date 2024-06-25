@@ -1,4 +1,4 @@
-import { Editor, createShapeId, getSvgAsImage, Box, track, TLShapeId } from '@tldraw/tldraw'
+import { Editor, createShapeId, getSvgAsImage, Box, TLShape, TLShapeId } from '@tldraw/tldraw'
 import { getSelectionAsText } from './getSelectionAsText'
 import { getHtmlFromOpenAI } from './getHtmlFromOpenAI'
 import { getCodeFromOpenAI } from './getCodeFromOpenAI'
@@ -10,39 +10,32 @@ import { CodeEditorShape } from '../CodeEditorShape/CodeEditorShape'
 
 import { downloadDataURLAsFile } from './downloadDataUrlAsFile'
 
-export async function makeReal(editor: Editor, apiKey: string, codeShapeId:	TLShapeId) {
+export async function makeReal(editor: Editor, apiKey: string, codeShapeId: TLShapeId, onStart: () => void, onFinish: () => void) {
 	editor.resetZoom()
-
+	let originalLockStatus = false
 	const selectedShapes = editor.getSelectedShapes()
+	const shapes = editor.getCurrentPageShapes() as TLShape[]
+	shapes.forEach(async (shape) => {
+		if (shape.type === 'code-editor-shape' && shape.isLocked) {
+			editor.updateShape({
+				...shape,
+				isLocked: false,
+			})
+			originalLockStatus = true
+		}
+	})
 
-	if (selectedShapes.length === 0) throw Error('First select something to make real.')
+	if (selectedShapes.length === 0) {
+		// editor.selectAll()
+		throw Error('Please select a shape to generate code from.')
+	}
+
+	onStart()
 
 	// Create the preview shape
 	// const { maxX, midY } = editor.getSelectionPageBounds()!
 	const box = editor.getSelectionPageBounds() as Box;
-	// const newShapeId = createShapeId()
-	// editor.createShape<PreviewShape>({
-	// 	id: newShapeId,
-	// 	type: 'response',
-	// 	x: maxX + 60, // to the right of the selection
-	// 	y: midY - (540 * 2) / 3 / 2, // half the height of the preview's initial shape
-	// 	props: { html: '' },
-	// })
-	// TODO: d1eterine different actions: {1: edit: using diff view; 2: generate code; 3: execute code}
-
-	// editor.createShape<CodeEditorShape>({
-	// 	id: newShapeId,
-	// 	type: 'code-editor-shape',
-	// 	x: maxX + 60,
-	// 	y: midY - (540 * 2) / 3 / 2,
-	// 	props: {
-	// 		html: 'generating code...',
-	// 		w: 200,
-	// 		h: 300
-	// 	},
-	// })
-
-	// Get an SVG based on the selected shapes
+	
 	const svg = await editor.getSvg(selectedShapes, {
 		scale: 1,
 		background: true,
@@ -67,7 +60,7 @@ export async function makeReal(editor: Editor, apiKey: string, codeShapeId:	TLSh
 		scale: 1,
 	})
 	const dataUrl = await blobToBase64(blob!)
-	// downloadDataURLAsFile(dataUrl, 'tldraw.png')
+	downloadDataURLAsFile(dataUrl, 'tldraw.png')
 
 	// Get any previous previews among the selected shapes
 	// const previousPreviews = selectedShapes.filter((shape) => {
@@ -77,9 +70,8 @@ export async function makeReal(editor: Editor, apiKey: string, codeShapeId:	TLSh
 		return shape.type === 'code-editor-shape'
 	}) as CodeEditorShape[]
 
-	console.log('dataUrl\n', previousCodeEditors)
+	// console.log('dataUrl\n', previousCodeEditors)
 
-	
 	try {
 		const json = await getCodeFromOpenAI({
 			image: dataUrl,
@@ -88,12 +80,6 @@ export async function makeReal(editor: Editor, apiKey: string, codeShapeId:	TLSh
 			grid,
 			previousCodeEditors,
 		});
-		// const json = await getHtmlFromOpenAI({
-		// 	image: dataUrl,
-		// 	apiKey,
-		// 	text: getSelectionAsText(editor),
-		// 	previousPreviews,
-		// })
 		console.log('res\n', json)
 
 		if (!json) {
@@ -104,15 +90,6 @@ export async function makeReal(editor: Editor, apiKey: string, codeShapeId:	TLSh
 			throw Error(`${json.error.message?.slice(0, 128)}...`)
 		}
 
-		// const message = json.choices[0].message.content
-
-		// editor.updateShape<PreviewShape>({
-		// 	id: newShapeId,
-		// 	type: 'response',
-		// 	props: {
-		// 		html: message,
-		// 	},
-		// })
 
 		const message = json.choices[0].message.content
 		const code = message.match(/```(python|javascript)([\s\S]*?)```/)?.[2] || message
@@ -122,7 +99,6 @@ export async function makeReal(editor: Editor, apiKey: string, codeShapeId:	TLSh
 		}
 
 
-		// calculate height of code editor (line-height = 1.4)
 		const lines = code.split('\n').length;
 		// const height = Math.min(300, lines * 1.4 * 16)
 
@@ -154,7 +130,7 @@ X_train, X_test, y_train, y_test = train_test_split(
 # Initialize and train the Logistic Regression model
 model = LogisticRegression()
 model.fit(X_train, y_train)
-`		
+`
 
 		const prevCode = editor.getShape<CodeEditorShape>(codeShapeId)?.props.code || ''
 		await new Promise((resolve) => setTimeout(resolve, 1000))
@@ -162,15 +138,19 @@ model.fit(X_train, y_train)
 		editor.updateShape<CodeEditorShape>({
 			id: codeShapeId,
 			type: 'code-editor-shape',
+			isLocked: originalLockStatus,
 			props: {
 				prevCode: prevCode,
 				code: code
 			},
 		})
+
 	} catch (e) {
 		// If anything went wrong, delete the shape.
 		// editor.deleteShape(newShapeId)
 		console.error(e)
 		throw e
+	} finally {
+		onFinish()
 	}
 }
