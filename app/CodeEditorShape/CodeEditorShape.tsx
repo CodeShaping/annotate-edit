@@ -1,20 +1,13 @@
 /* eslint-disable react-hooks/rules-of-hooks */
 import {
-    Geometry2d,
-    HTMLContainer,
-    Rectangle2d,
     BaseBoxShapeUtil,
     TLBaseShape,
-    ShapeUtil,
-    toDomPrecision,
-    DefaultSpinner,
-    TLOnResizeHandler,
-    resizeBox,
     TLOnEditEndHandler,
     SvgExportContext,
     useIsEditing,
     useValue,
     Vec,
+    useSelectionEvents,
 } from '@tldraw/tldraw'
 
 import { RecordProps, T } from 'tldraw'
@@ -65,10 +58,16 @@ export class CodeEditorShapeUtil extends BaseBoxShapeUtil<CodeEditorShape> {
     override canResize = () => true
     override canBind = () => false
     override canUnmount = () => false
+    override hideSelectionBoundsFg = () => true
+    override hideSelectionBoundsBg = () => true
+    override canScroll = () => true
+    override canSnap = () => true
 
 
     override component(shape: CodeEditorShape) {
         const isEditing = useIsEditing(shape.id)
+        const selection = useSelectionEvents('bottom_right')
+
         const codeMirrorRef = useRef<ReactCodeMirrorRef | null>(null)
         const extensions = [
             python(),
@@ -90,14 +89,23 @@ export class CodeEditorShapeUtil extends BaseBoxShapeUtil<CodeEditorShape> {
             [this.editor]
         )
 
+        // listen to codemirror changes and update the height
         useEffect(() => {
+            const view = codeMirrorRef.current?.view
+            // const state = codeMirrorRef.current?.state
+            // console.log('editor', view?.contentHeight, view?.defaultLineHeight, state?.doc.lines)
+            this.editor.updateShape<CodeEditorShape>({
+                id: shape.id,
+                type: 'code-editor-shape',
+                props: {
+                    ...shape.props,
+                    h: Math.max(window.innerHeight, (view?.contentHeight || shape.props.h))
+                }
+            })
             if (isEditing) {
                 codeMirrorRef.current?.view?.focus();
             }
         }, [isEditing])
-
-        const [isLocked, setIsLocked] = useState(false);
-        const [isDiff, setIsDiff] = useState(false);
 
 
         const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
@@ -142,7 +150,7 @@ export class CodeEditorShapeUtil extends BaseBoxShapeUtil<CodeEditorShape> {
                         }}
                     />
                 </div>
-                {(isDiff || (shape.props.prevCode !== shape.props.code && isEditing)) && (
+                {(shape.props.prevCode !== shape.props.code && isEditing) && (
                     <div style={{ position: 'absolute', left: '70%', zIndex: 2, width: '50%' }}>
                         <CodeMirror
                             value={shape.props.code}
@@ -232,20 +240,24 @@ export class CodeEditorShapeUtil extends BaseBoxShapeUtil<CodeEditorShape> {
         return g
     }
 
-    override onEditEnd: TLOnEditEndHandler<CodeEditorShape> = (shape) => {
-        this.editor.updateShape<CodeEditorShape>({
-            id: shape.id,
-            type: 'code-editor-shape',
-            props: {
-                ...shape.props,
-                prevCode: shape.props.code
-            },
-        })
-        // this.editor.animateShape(
-        // 	{ ...shape, rotation: shape.rotation + Math.PI * 2 },
-        // 	{ animation: { duration: 250 } }
-        // )
-    }
+    // override onClick: TLOnEditEndHandler<CodeEditorShape> = (shape) => {
+    //     console.log('onClick', shape)
+    //     this.editor.setEditingShape(shape.id)
+    // }
+
+    // override onEditEnd: TLOnEditEndHandler<CodeEditorShape> = (shape) => {
+    //     this.editor.updateShape<CodeEditorShape>({
+    //         id: shape.id,
+    //         type: 'code-editor-shape',
+    //         isLocked: true,
+    //         props: {
+    //             ...shape.props,
+    //             prevCode: shape.props.code,
+    //             h: height,
+    //             w: window.innerWidth,
+    //         },
+    //     })
+    // }
 
     indicator(shape: CodeEditorShape) {
         return <rect width={shape.props.w} height={shape.props.h} />

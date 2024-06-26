@@ -6,7 +6,8 @@ import { ShareButtonGroup } from './components/ShareButtonGroup'
 import { PreviewShapeUtil } from './PreviewShape/PreviewShape'
 import { CodeEditorShapeUtil } from './CodeEditorShape/CodeEditorShape'
 import { useCallback, useEffect } from 'react'
-import { Editor, TLShape, TLShapeId, createShapeId, useEditor } from '@tldraw/tldraw'
+import { Editor, useEditor, TLShape, TLShapeId, createShapeId, Box } from '@tldraw/tldraw'
+// import { useEditor } from 'tldraw'
 import { CodeEditorShape } from './CodeEditorShape/CodeEditorShape'
 const initalCode = `
 import numpy as np
@@ -46,10 +47,48 @@ function InsideOfContext({ newShapeId }: { newShapeId: TLShapeId }) {
 		editor.zoomToFit()
 		editor.zoomIn()
 		editor.resetZoom()
+		editor.setCamera({
+			x: 0,
+			y: 0,
+			z: 1,
+		})
+		const initialCameraPosition = editor.getCamera()
+
+
+		const handlePanning = (event: TouchEvent) => {
+			const currentCameraPosition = editor.getCamera();
+			// const box = editor.getSelectionPageBounds() as Box
+			const codeEditor = editor.getShape<CodeEditorShape>(newShapeId)
+			const box = {
+				x: 0,
+				y: 0,
+				w: codeEditor?.props.w || window.innerWidth,
+				h: codeEditor?.props.h || window.innerHeight,
+			}
+			let newY = currentCameraPosition.y;
+			// console.log('box', box.y, newY)
+			// if (newY < box.y) {
+			// 	newY = box.y;
+			// } else if (newY > box.y + box.h) {
+			// 	newY = box.y + box.h;
+			// }
+
+			editor.setCamera({
+				x: initialCameraPosition.x,
+				y: newY,
+				z: 1,
+			})
+
+			if (event.touches.length > 1) {
+				event.preventDefault();
+			}
+		};
+
 
 		editor.createShape<CodeEditorShape>({
 			id: newShapeId,
 			type: 'code-editor-shape',
+			isLocked: true,
 			x: 0,
 			y: 0,
 			props: {
@@ -70,12 +109,14 @@ function InsideOfContext({ newShapeId }: { newShapeId: TLShapeId }) {
 			})
 		}
 
+		// when user panning
+		window.addEventListener('touchstart', handlePanning)
+		window.addEventListener('touchmove', handlePanning)
+		window.addEventListener('touchend', handlePanning)
+
 		window.addEventListener('resize', handleResize)
 		return () => {
-			// remove all shapes
-			// get all shapes
 			const shapes = editor.getCurrentPageShapes() as TLShape[]
-			// unlock all shapes
 			shapes.forEach((shape) => {
 				editor.updateShape({
 					...shape,
@@ -84,6 +125,9 @@ function InsideOfContext({ newShapeId }: { newShapeId: TLShapeId }) {
 			})
 			editor.deleteShapes([...shapes.map((shape) => shape.id)])
 			window.removeEventListener('resize', handleResize)
+			window.removeEventListener('touchstart', handlePanning)
+			window.removeEventListener('touchmove', handlePanning)
+			window.removeEventListener('touchend', handlePanning)
 		}
 	}, [])
 

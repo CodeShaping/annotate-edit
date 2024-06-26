@@ -99,8 +99,8 @@ export async function makeReal(editor: Editor, apiKey: string, codeShapeId: TLSh
 		}
 
 
-		const lines = code.split('\n').length;
-		// const height = Math.min(300, lines * 1.4 * 16)
+		// const lines = code.split('\n').length;
+		// const height = Math.max(300, lines * 1.4 * 16)
 
 		const newTempCode = `
 import numpy as np
@@ -141,7 +141,7 @@ model.fit(X_train, y_train)
 			isLocked: originalLockStatus,
 			props: {
 				prevCode: prevCode,
-				code: code
+				code: code,
 			},
 		})
 
