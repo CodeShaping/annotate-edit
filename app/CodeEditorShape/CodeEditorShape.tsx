@@ -2,27 +2,25 @@
 import {
     BaseBoxShapeUtil,
     TLBaseShape,
-    TLOnEditEndHandler,
     SvgExportContext,
     useIsEditing,
     useValue,
     Vec,
-    useSelectionEvents,
 } from '@tldraw/tldraw'
 
 import { RecordProps, T } from 'tldraw'
-import CodeMirrorMerge, { CodeMirrorMergeProps } from 'react-codemirror-merge';
+// import CodeMirrorMerge, { CodeMirrorMergeProps } from 'react-codemirror-merge';
 
 import CodeMirror, { EditorView, EditorState, type ReactCodeMirrorRef } from '@uiw/react-codemirror';
 import { python } from '@codemirror/lang-python';
 import { javascript } from '@codemirror/lang-javascript';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import html2canvas from 'html2canvas';
-import * as JsDiff from "diff";
-import { unifiedMergeView, updateOriginalDoc } from '@codemirror/merge';
-import { createTheme } from '@uiw/codemirror-themes';
-const Original = CodeMirrorMerge.Original;
-const Modified = CodeMirrorMerge.Modified;
+// import * as JsDiff from "diff";
+// import { unifiedMergeView, updateOriginalDoc } from '@codemirror/merge';
+// import { createTheme } from '@uiw/codemirror-themes';
+// const Original = CodeMirrorMerge.Original;
+// const Modified = CodeMirrorMerge.Modified;
 
 export type CodeEditorShape = TLBaseShape<
     'code-editor-shape',
@@ -31,6 +29,7 @@ export type CodeEditorShape = TLBaseShape<
         h: number
         code: string
         prevCode: string
+        res: string
     }
 >
 
@@ -41,15 +40,17 @@ export class CodeEditorShapeUtil extends BaseBoxShapeUtil<CodeEditorShape> {
         w: T.number,
         h: T.number,
         code: T.string,
-        prevCode: T.string
+        prevCode: T.string,
+        res: T.string,
     }
 
     getDefaultProps(): CodeEditorShape['props'] {
         return {
             w: 400,
             h: 300,
-            code: "<html><body><h1>Hello, World!</h1></body></html>",
-            prevCode: ''
+            code: '',
+            prevCode: '',
+            res: '1243',
         }
     }
 
@@ -66,18 +67,11 @@ export class CodeEditorShapeUtil extends BaseBoxShapeUtil<CodeEditorShape> {
 
     override component(shape: CodeEditorShape) {
         const isEditing = useIsEditing(shape.id)
-        const selection = useSelectionEvents('bottom_right')
 
         const codeMirrorRef = useRef<ReactCodeMirrorRef | null>(null)
         const extensions = [
             python(),
             javascript(),
-            // unifiedMergeView({
-            //     original: shape.props.prevCode,
-            //     highlightChanges: false,
-            //     syntaxHighlightDeletions: false,
-            //     mergeControls: true,
-            // }),
         ]
 
         const boxShadow = useValue(
@@ -89,10 +83,8 @@ export class CodeEditorShapeUtil extends BaseBoxShapeUtil<CodeEditorShape> {
             [this.editor]
         )
 
-        // listen to codemirror changes and update the height
         useEffect(() => {
             const view = codeMirrorRef.current?.view
-            // const state = codeMirrorRef.current?.state
             // console.log('editor', view?.contentHeight, view?.defaultLineHeight, state?.doc.lines)
             this.editor.updateShape<CodeEditorShape>({
                 id: shape.id,
@@ -107,6 +99,44 @@ export class CodeEditorShapeUtil extends BaseBoxShapeUtil<CodeEditorShape> {
             }
         }, [isEditing])
 
+        useEffect(() => {
+            console.log('shape.props.code', shape.props.code)
+            // update the height
+            const view = codeMirrorRef.current?.view
+            this.editor.updateShape<CodeEditorShape>({
+                id: shape.id,
+                type: 'code-editor-shape',
+                props: {
+                    ...shape.props,
+                    h: Math.max(window.innerHeight, (view?.contentHeight || shape.props.h))
+                }
+            })
+        }, [shape.props.code])
+
+
+        function handleShowResult() {
+            const editor = document.getElementById(`editor-${shape.id}`);
+            codeMirrorRef.current?.view?.focus();
+            const resultView = document.getElementById('result-view');
+            if (resultView?.style.width === '15px') {
+                if (editor) {
+                    editor.style.width = `${shape.props.w / 1.5}px`;
+                }
+                if (resultView) {
+                    resultView.style.width = shape.props.w - (shape.props.w / 1.5) + 'px';
+                }
+                return;
+            } else {
+                if (editor) {
+                    editor.style.width = `${shape.props.w - 20}px`;
+                }
+
+                if (resultView) {
+                    resultView.style.width = '15px';
+                }
+            }
+        }
+
 
         const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 
@@ -115,27 +145,35 @@ export class CodeEditorShapeUtil extends BaseBoxShapeUtil<CodeEditorShape> {
                 style={{
                     touchAction: isTouchDevice ? 'auto' : 'none',
                     pointerEvents: isEditing ? 'auto' : 'none',
-                    display: 'grid',
+                    // display: 'grid',
                     gridTemplateColumns: '1fr 1fr',
                     alignItems: 'center',
+                    display: 'flex',
+                    flexDirection: 'row',
+                    minHeight: `${shape.props.h}px`,
                 }}
             >
-                <div style={{ position: 'relative', zIndex: 1 }}>
+                <div
+                    style={{ flexGrow: 1, position: 'relative', zIndex: 1 }}
+                >
                     <CodeMirror
                         id={`editor-${shape.id}`}
                         ref={codeMirrorRef}
                         value={shape.props.code}
+                        onPointerDown={(e) => e.stopPropagation()}
                         style={{
                             fontSize: '18px',
                             pointerEvents: isEditing ? 'auto' : 'none',
                             touchAction: isEditing || isTouchDevice ? 'auto' : 'none',
-                            boxShadow,
+                            // boxShadow,
                             border: '1px solid var(--color-panel-contrast)',
-                            borderRadius: 'var(--radius-2)'
+                            borderRadius: 'var(--radius-2)',
+                            backgroundColor: 'var(--color-background)',
+                            width: `${shape.props.w - 15}px`,
                         }}
                         onTouchStart={(e) => { e.preventDefault(); return; }}
                         extensions={[...extensions]}
-                        width={`${shape.props.w}px`}
+                        // maxWidth={`${shape.props.w}px`}
                         height={`${shape.props.h}px`}
                         editable={true}
                         onChange={(value) => {
@@ -150,77 +188,25 @@ export class CodeEditorShapeUtil extends BaseBoxShapeUtil<CodeEditorShape> {
                         }}
                     />
                 </div>
-                {(shape.props.prevCode !== shape.props.code && isEditing) && (
-                    <div style={{ position: 'absolute', left: '70%', zIndex: 2, width: '50%' }}>
-                        <CodeMirror
-                            value={shape.props.code}
-                            extensions={[
-                                python(),
-                                javascript(),
-                                EditorView.editable.of(false),
-                                EditorState.readOnly.of(true),
-                                unifiedMergeView({
-                                    original: shape.props.prevCode,
-                                    highlightChanges: false,
-                                    syntaxHighlightDeletions: false,
-                                    mergeControls: false,
-                                    gutter: true,
-                                }),
-                            ]}
-                        />
-                        {/* <CodeMirrorMerge
-                            orientation={'a-b'}
-                            collapseUnchanged={undefined}
-                            highlightChanges={false}
-                            destroyRerender={true}
-                            gutter={false}
-                        >
-                            <Modified
-                                value={shape.props.code}
-                                extensions={[
-                                    python(), javascript(),
-                                    EditorView.editable.of(false),
-                                    EditorState.readOnly.of(true),
-                                    unifiedMergeView({
-                                        original: shape.props.prevCode,
-                                        highlightChanges: false,
-                                        syntaxHighlightDeletions: false,
-                                        mergeControls: false,
-                                    }),
-                                ]}
-                            />
-                        </CodeMirrorMerge> */}
+                <div id="resizer" style={{
+                    width: '15px',
+                    height: '100vh',
+                    backgroundColor: '#ccc',
+                }}
+                    onMouseDown={(e) => { handleShowResult(); e.stopPropagation(); }}
+                    onPointerDown={(e) => { handleShowResult(); e.stopPropagation(); }}
+                    onTouchStart={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                />
+                {shape.props.res && (
+                    <div id="result-view" style={{
+                        flexGrow: 1,
+                        overflow: 'auto',
+                        borderLeft: '1px solid #ccc',
+                    }}>
+                        <div dangerouslySetInnerHTML={{ __html: shape.props.res }}></div>
                     </div>
                 )}
-                <div
-                    style={{
-                        textAlign: 'center',
-                        position: 'absolute',
-                        bottom: isEditing ? -40 : 0,
-                        padding: 4,
-                        fontFamily: 'inherit',
-                        fontSize: 12,
-                        left: 0,
-                        width: '100%',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        pointerEvents: 'none',
-                    }}
-                >
-                    <span
-                        style={{
-                            background: 'var(--color-panel)',
-                            padding: '4px 12px',
-                            borderRadius: 99,
-                            border: '1px solid var(--color-muted-1)',
-                        }}
-                    >
-                        {isEditing ? 'Click the canvas to exit' : 'Double click to interact'}
-                    </span>
-                </div>
             </div>
-
         )
     }
 

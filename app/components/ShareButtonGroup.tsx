@@ -9,7 +9,7 @@ export function ShareButtonGroup({ codeShapeId }: { codeShapeId: TLShapeId }) {
         <div className="shareButtonGroup">
             <LockCodeEditorButton codeShapeId={codeShapeId} />
             <MakeRealButton codeShapeId={codeShapeId} />
-            <ExecuteCodeButton />
+            <ExecuteCodeButton codeShapeId={codeShapeId} />
         </div>
     )
 }

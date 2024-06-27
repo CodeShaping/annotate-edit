@@ -18,6 +18,10 @@
 	touch-action: auto !important;
 } */
 
+.tl-background {
+	background-color: white !important;
+}
+
 .tlui-help-menu {
 	display: none !important;
 }

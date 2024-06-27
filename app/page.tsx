@@ -9,29 +9,20 @@ import { useCallback, useEffect } from 'react'
 import { Editor, useEditor, TLShape, TLShapeId, createShapeId, Box } from '@tldraw/tldraw'
 // import { useEditor } from 'tldraw'
 import { CodeEditorShape } from './CodeEditorShape/CodeEditorShape'
-const initalCode = `
-import numpy as np
+const initalCode = `import numpy as np
 import pandas as pd
-from sklearn.model_selection import train_test_split
-from sklearn.linear_model import LinearRegression
+import matplotlib.pyplot as plt
+from sklearn import datasets
 
-data = pd.read_csv('data.csv')
+iris = datasets.load_iris()
 
-def preprocess(data):
-    data = data.dropna()
-    data = data.drop_duplicates()
-    return data
-
-data = preprocess(data)
-
-X = data[['feature1', 'feature2']]
-y = data['target']
-
-X_train, X_test, y_train, y_test = train_test_split(
-  X, y, test_size=0.2, random_state=42)
-
-model = LinearRegression()
-model.fit(X_train, y_train)
+_, ax = plt.subplots()
+scatter = ax.scatter(iris.data[:, 0], iris.data[:, 1], c=iris.target)
+ax.set(xlabel=iris.feature_names[0], ylabel=iris.feature_names[1])
+_ = ax.legend(
+    scatter.legend_elements()[0], iris.target_names, loc="lower right", title="Classes"
+)
+plt.show()	
 ` as string;
 
 
@@ -58,20 +49,14 @@ function InsideOfContext({ newShapeId }: { newShapeId: TLShapeId }) {
 		const handlePanning = (event: TouchEvent) => {
 			const currentCameraPosition = editor.getCamera();
 			// const box = editor.getSelectionPageBounds() as Box
-			const codeEditor = editor.getShape<CodeEditorShape>(newShapeId)
-			const box = {
-				x: 0,
-				y: 0,
-				w: codeEditor?.props.w || window.innerWidth,
-				h: codeEditor?.props.h || window.innerHeight,
-			}
-			let newY = currentCameraPosition.y;
-			// console.log('box', box.y, newY)
-			// if (newY < box.y) {
-			// 	newY = box.y;
-			// } else if (newY > box.y + box.h) {
-			// 	newY = box.y + box.h;
+			// const codeEditor = editor.getShape<CodeEditorShape>(newShapeId)
+			// const box = {
+			// 	x: 0,
+			// 	y: 0,
+			// 	w: codeEditor?.props.w || window.innerWidth,
+			// 	h: codeEditor?.props.h || window.innerHeight,
 			// }
+			let newY = currentCameraPosition.y;
 
 			editor.setCamera({
 				x: initialCameraPosition.x,

@@ -1,6 +1,6 @@
 import {
     Editor, createShapeId, TLBaseShape, TLImageShape, TLTextShape,
-    AssetRecordType,
+    AssetRecordType, type TLShapeId
 } from '@tldraw/tldraw'
 import { getSelectionAsText } from './getSelectionAsText'
 import { CodeEditorShape } from '../CodeEditorShape/CodeEditorShape'
@@ -50,7 +50,7 @@ def ensure_matplotlib_patch():
 ensure_matplotlib_patch()\n
 `;
 
-function tableToHtml(output: string, id: string, className: string): string {
+function tableToHtml(output: string, id: TLShapeId, className: string): string {
     const lines = output.split("\n");
     let html = `<style>
         .${className} {
@@ -130,7 +130,6 @@ const codeRefactoring = async (code: string): Promise<string> => {
     }
 
     if (lastLineIndex < 0) {
-        // All lines are empty
         return code;
     }
 
@@ -193,7 +192,7 @@ const decideExecResultType = (result: any) => {
 };
 
 
-export async function executeCode(editor: Editor) {
+export async function executeCode(editor: Editor, codeShapeId: TLShapeId) {
     const selectedShapes = editor.getSelectedShapes()
 
     if (selectedShapes.length === 0) throw Error('First select something to execute.')
@@ -201,16 +200,17 @@ export async function executeCode(editor: Editor) {
 
 
     const { maxX, midY } = editor.getSelectionPageBounds()!
-    const newShapeId = createShapeId()
-    let allSelectedCode = ''
-    for (const shape of selectedShapes) {
-        if (shape.type === 'code-editor-shape') {
-            allSelectedCode += (shape as CodeEditorShape).props.code
-        }
-    }
+    // const newShapeId = createShapeId()
+    // for (const shape of selectedShapes) {
+    //     if (shape.type === 'code-editor-shape') {
+    //         allSelectedCode += (shape as CodeEditorShape).props.code
+    //     }
+    // }
 
+    const codeEditorShape = editor.getShape<CodeEditorShape>(codeShapeId)
+    if (!codeEditorShape || codeEditorShape.props.code === '') { throw Error('No code to execute.') }
 
-    allSelectedCode = await codeRefactoring(allSelectedCode);
+    const allSelectedCode = await codeRefactoring(codeEditorShape.props.code)
     await installExtraPackages(allSelectedCode);
 
     const { error, stdout, stderr } = (await xPython.exec({
@@ -225,43 +225,26 @@ export async function executeCode(editor: Editor) {
     const resultType = decideExecResultType(stdout) as CodeExecResultType;
     // console.log(`resultType: ${resultType}\n\nstdout: ${stdout}\nstderr: ${error || stderr}`);
 
-    // image
+    let htmlResult = '';
     if (resultType === 'image' && stdout) {
-        const newShapeId = createShapeId()
-        const htmlWithImg = `<html><body><img src="${stdout}" alt="vis-${newShapeId}" width="300"></body></html>`
-
-        editor.createShape<PreviewShape>({
-            id: newShapeId,
-            type: 'response',
-            x: maxX + 60,
-            y: midY - (540 * 2) / 3 / 2,
-            props: { html: htmlWithImg },
-        })
-    } else if (resultType === 'table' && (stdout)) {
-        const newShapeId = createShapeId()
-        const htmlWithTable = tableToHtml(stdout, newShapeId, 'exec-res-table')
-
-        editor.createShape<PreviewShape>({
-            id: newShapeId,
-            type: 'response',
-            x: maxX + 60,
-            y: midY - (540 * 2) / 3 / 2,
-            props: { html: htmlWithTable },
-        })
+        htmlResult = `<img src="${stdout}" alt="vis-${codeShapeId}" width="300">`
+    } else if (resultType === 'table' && stdout) {
+        htmlResult = tableToHtml(stdout, codeShapeId, 'exec-res-table')
     } else {
-        const newShapeId = createShapeId()
-        editor.createShape<TLTextShape>({
-            id: newShapeId,
-            type: 'text',
-            x: maxX + 60,
-            y: midY - (540 * 2) / 3 / 2,
-            props: {
-                text: stdout || '',
-                font: 'mono',
-                align: 'start',
-                color: 'grey',
-            },
-        })
-
+        htmlResult = `<pre>${stdout}</pre>`
     }
+
+    if (htmlResult === '') {
+        throw Error('No result to display.')
+    }
+    console.log(`[Exec]: ${resultType}-${htmlResult}`);
+
+    editor.updateShape<CodeEditorShape>({
+        id: codeShapeId,
+        type: 'code-editor-shape',
+        props: {
+            ...codeEditorShape.props,
+            res: htmlResult,
+        },
+    })
 }

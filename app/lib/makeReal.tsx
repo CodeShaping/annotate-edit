@@ -11,9 +11,10 @@ import { CodeEditorShape } from '../CodeEditorShape/CodeEditorShape'
 import { downloadDataURLAsFile } from './downloadDataUrlAsFile'
 
 export async function makeReal(editor: Editor, apiKey: string, codeShapeId: TLShapeId, onStart: () => void, onFinish: () => void) {
+	onStart()
 	editor.resetZoom()
-	let originalLockStatus = false
-	const selectedShapes = editor.getSelectedShapes()
+	// let originalLockStatus = false
+	
 	const shapes = editor.getCurrentPageShapes() as TLShape[]
 	shapes.forEach(async (shape) => {
 		if (shape.type === 'code-editor-shape' && shape.isLocked) {
@@ -21,18 +22,17 @@ export async function makeReal(editor: Editor, apiKey: string, codeShapeId: TLSh
 				...shape,
 				isLocked: false,
 			})
-			originalLockStatus = true
 		}
 	})
 
+	let selectedShapes = editor.getSelectedShapes()
 	if (selectedShapes.length === 0) {
 		editor.selectAll()
-		// throw Error('Please select a shape to generate code from.')
+		selectedShapes = editor.getSelectedShapes()
 	}
 
-	onStart()
+	console.log('selectedShapes2', selectedShapes)
 
-	// Create the preview shape
 	// const { maxX, midY } = editor.getSelectionPageBounds()!
 	const box = editor.getSelectionPageBounds() as Box;
 	
@@ -46,13 +46,11 @@ export async function makeReal(editor: Editor, apiKey: string, codeShapeId: TLSh
 		return
 	}
 
-	// Add the grid lines to the SVG
 	const grid = { color: 'red', size: 100, labels: true }
 	addGridToSvg(svg, grid)
 
 	if (!svg) throw Error(`Could not get the SVG.`)
 
-	// Turn the SVG into a DataUrl
 	const IS_SAFARI = /^((?!chrome|android).)*safari/i.test(navigator.userAgent)
 	const blob = await getSvgAsImage(svg, IS_SAFARI, {
 		type: 'png',
@@ -62,15 +60,9 @@ export async function makeReal(editor: Editor, apiKey: string, codeShapeId: TLSh
 	const dataUrl = await blobToBase64(blob!)
 	// downloadDataURLAsFile(dataUrl, 'tldraw.png')
 
-	// Get any previous previews among the selected shapes
-	// const previousPreviews = selectedShapes.filter((shape) => {
-	// 	return shape.type === 'response'
-	// }) as PreviewShape[]
 	const previousCodeEditors = selectedShapes.filter((shape) => {
 		return shape.type === 'code-editor-shape'
 	}) as CodeEditorShape[]
-
-	// console.log('dataUrl\n', previousCodeEditors)
 
 	try {
 		const json = await getCodeFromOpenAI({
@@ -80,7 +72,7 @@ export async function makeReal(editor: Editor, apiKey: string, codeShapeId: TLSh
 			grid,
 			previousCodeEditors,
 		});
-		console.log('res\n', json)
+		console.log('res\n', json.choices[0].message.content)
 
 		if (!json) {
 			throw Error('Could not contact OpenAI.')
@@ -133,20 +125,23 @@ model.fit(X_train, y_train)
 `
 
 		const prevCode = editor.getShape<CodeEditorShape>(codeShapeId)?.props.code || ''
-		await new Promise((resolve) => setTimeout(resolve, 1000))
+		// await new Promise((resolve) => setTimeout(resolve, 1000))
 
 		editor.updateShape<CodeEditorShape>({
 			id: codeShapeId,
 			type: 'code-editor-shape',
-			isLocked: originalLockStatus,
+			isLocked: true,
 			props: {
 				prevCode: prevCode,
 				code: code,
 			},
 		})
 
+		// setEditing
+		// editor.setSelectedShapes([codeShapeId])
+		// editor.setEditingShape(codeShapeId)
+
 	} catch (e) {
-		// If anything went wrong, delete the shape.
 		// editor.deleteShape(newShapeId)
 		console.error(e)
 		throw e

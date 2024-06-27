@@ -1,14 +1,14 @@
-import { useEditor, useToasts } from '@tldraw/tldraw'
+import { useEditor, useToasts, type TLShapeId } from '@tldraw/tldraw'
 import { useCallback, useEffect } from 'react'
 import { executeCode } from '../lib/executeCode'
 
-export function ExecuteCodeButton() {
+export function ExecuteCodeButton({ codeShapeId }: { codeShapeId: TLShapeId }) {
 	const editor = useEditor()
 	const { addToast } = useToasts()
 
 	const handleClick = useCallback(async () => {
 		try {
-			await executeCode(editor)
+			await executeCode(editor, codeShapeId)
 		} catch (e) {
 			console.error(e)
 			addToast({
