@@ -204,6 +204,49 @@ print(processed_df)`,
         id: '3-2',
         title: 'Task 3-2',
         description: 'Visualize Data Distribution & Implement Feature Scaling',
+        //         starterCode: `import numpy as np
+        // import pandas as pd
+        // from typing import List, Dict
+        // import matplotlib.pyplot as plt
+        // from sklearn.preprocessing import MinMaxScaler
+
+        // # Sample data
+        // data = {
+        //     'feature1': [1.0, 2.0, np.nan, 4.0, 5.0],
+        //     'feature2': [2.0, np.nan, 3.0, 4.0, 5.0],
+        //     'label': [0, 1, 0, 1, 1]
+        // }
+        // df = pd.DataFrame(data)
+
+        // class DataProcessor:
+        //     def __init__(self, dataframe: pd.DataFrame):
+        //         self.dataframe = dataframe
+
+        //     def preprocess(self) -> pd.DataFrame:
+        //         return self.dataframe
+
+        //     def visualize_distribution(self):
+        //         feature_columns = self.dataframe.columns.drop('label')
+        //         for column in feature_columns:
+        //             plt.figure(figsize=(6, 4))
+        //             plt.hist(self.dataframe[column].dropna(), bins=10, density=True, alpha=0.6, color='g')
+        //             plt.title(f'Distribution of {column}')
+        //             plt.ylabel('Density')
+        //             plt.xlabel(column)
+        //             plt.grid(axis='y', alpha=0.75)
+        //             plt.show()
+
+        //     def scale_features(self) -> pd.DataFrame:
+        //         scaler = MinMaxScaler()
+        //         feature_columns = self.dataframe.columns.drop('label')
+        //         self.dataframe[feature_columns] = scaler.fit_transform(self.dataframe[feature_columns])
+        //         return self.dataframe
+
+        // # Example usage
+        // processor = DataProcessor(df)
+        // processor.visualize_distribution()
+        // processed_df = processor.scale_features()
+        // print(processed_df)`,
         starterCode: `import numpy as np
 import pandas as pd
 from typing import List, Dict

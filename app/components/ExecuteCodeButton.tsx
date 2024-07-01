@@ -13,7 +13,7 @@ export function ExecuteCodeButton({ codeShapeId, onStoreLog }: { codeShapeId: TL
 			setIsExecuting(true);
 			let res = await executeCode(editor, codeShapeId)
 			// remove html tags
-			res = res.replace(/<[^>]*>?/gm, '')
+			// res = res.replace(/<[^>]*>?/gm, '')
 			
 			if (res) {
 				setIsExecuting(false);

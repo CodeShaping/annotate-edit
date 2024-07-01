@@ -198,21 +198,23 @@ export class CodeEditorShapeUtil extends BaseBoxShapeUtil<CodeEditorShape> {
                 </div>
                 {shape.props.res && (
                     <div id="result-view" style={{
-                        position: 'fixed',
+                        position: 'absolute',
                         bottom: 0,
                         left: 0,
                         width: '100%',
                         maxHeight: '50vh',
                         overflow: 'auto',
-                        borderTop: '1px solid #ccc',
+                        borderTop: '5px solid #ccc',
                         fontFamily: '"Fira Code", "Consolas", "Monaco", monospace',
-                        backgroundColor: '#1e1e1e',
-                        color: '#dcdcdc',
-                        padding: '10px',
+                        backgroundColor: 'rgb(248 248 248)',
+                        color: '#000',
+                        padding: '20px',
                         boxSizing: 'border-box',
                         zIndex: 10,
-                        whiteSpace: 'pre-wrap' // Ensure text wraps, including <pre> content
+                        whiteSpace: 'pre-wrap'
                     }}
+                        contentEditable={false}
+                        tabIndex={-1}
                         onMouseDown={(e) => { handleShowResult(); e.stopPropagation(); }}
                         onPointerDown={(e) => { handleShowResult(); e.stopPropagation(); }}
                         onTouchStart={(e) => { e.preventDefault(); e.stopPropagation(); }}

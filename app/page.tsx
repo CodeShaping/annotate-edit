@@ -168,7 +168,7 @@ export default function App() {
 	};
 
 	const handleStoreLog = async (log: any) => {
-		console.log('log', log, userId.current, taskId.current);
+		// console.log('log', log, userId.current, taskId.current);
 		if (!taskId.current) {
 			console.error('No taskId or userId');
 			return;

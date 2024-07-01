@@ -32,7 +32,7 @@ export const OPENAI_USER_PROMPT_WITH_PREVIOUS_DESIGN =
 export const OPENAI_MAKE_CODE_PROMPT = `You are an expert python & javascript developer.
 Generate of modify the code based on the handwritten annotations drawn on the canvas.
 These annotations might include handwritten text, arrows, crosses, and other symbols that indicate the changes to be made to the code.
-Please interpret each annotation and make the necessary changes to the code accordingly.
+Please interpret each annotation and make the necessary changes to the code accordingly. (use matplotlib for plotting not seaborn)
 Please generate the entire code based on the changes made to the current code.
 `
 

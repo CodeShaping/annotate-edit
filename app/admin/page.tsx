@@ -123,7 +123,7 @@ export default function Admin() {
 
         for (const task of userStudyTasks) {
             const logs = await getAllDataFromCollection(`${userId.current}_${task.id}`);
-            console.log(`Logs for task ${task.id}`, logs.length);
+            // console.log(`Logs for task ${task.id}`, logs.length);
             allLogs.push(...logs);
 
             // Assuming log.data contains the image URL or base64 string

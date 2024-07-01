@@ -16,7 +16,7 @@ import { PreviewShape } from '../PreviewShape/PreviewShape';
 
 export type CodeExecResultType = "image" | "text" | "table";
 export interface CodeExecReturnValue {
-    result: string | null;
+    result: any | null;
     error: string | null;
     stdout: string | null;
     stderr: string | null;
@@ -49,6 +49,38 @@ def ensure_matplotlib_patch():
   plt.show = show\n\n
 ensure_matplotlib_patch()\n
 `;
+
+const anotherPatchPrefix = `import os
+from matplotlib import pyplot as plt
+import io
+import base64
+import js
+
+
+class Dud:
+
+    def __init__(self, *args, **kwargs) -> None:
+        return
+
+    def __getattr__(self, __name: str):
+        return Dud
+
+
+js.document = Dud()
+`
+const anotherPatchSuffix = `
+
+# Print base64 string to stdout
+bytes_io = io.BytesIO()
+
+plt.savefig(bytes_io, format='jpg')
+
+bytes_io.seek(0)
+
+base64_encoded_spectrogram = base64.b64encode(bytes_io.read())
+
+print(base64_encoded_spectrogram.decode('utf-8'))
+`
 
 function tableToHtml(output: string, id: TLShapeId, className: string): string {
     const lines = output.split("\n");
@@ -140,7 +172,9 @@ const codeRefactoring = async (code: string): Promise<string> => {
         code.includes("plt.show") ||
         code.includes("sns")
     ) {
-        return `${matplotlibCode}\n${code}`;
+        // return `${matplotlibCode}\n${code}`;
+        return `${anotherPatchPrefix}\n${code}\n${anotherPatchSuffix}`;
+        // return code
     }
     else if (lastLine.includes("df.") && !lastLine.includes("print")) {
         return code.replace(lastLine, `print(${lastLine})`);
@@ -212,37 +246,50 @@ export async function executeCode(editor: Editor, codeShapeId: TLShapeId) {
 
     const allSelectedCode = await codeRefactoring(codeEditorShape.props.code)
     await installExtraPackages(allSelectedCode);
+    const { result: code } = await xPython.format({
+        code: allSelectedCode,
+    });
+
 
     const { error, stdout, stderr } = (await xPython.exec({
-        code: allSelectedCode,
+        code: code,
     })) as CodeExecReturnValue;
 
-    if (error) {
-        throw Error(error)
+    if (error || !stdout) {
+        throw Error(error || 'No output from the code.')
     }
-
 
     const resultType = decideExecResultType(stdout) as CodeExecResultType;
-    // console.log(`resultType: ${resultType}\n\nstdout: ${stdout}\nstderr: ${error || stderr}`);
 
     let htmlResult = '';
-    if (resultType === 'image' && stdout) {
-        htmlResult = `<img src="${stdout}" alt="vis-${codeShapeId}" width="300">`
-    } else if (resultType === 'table' && stdout) {
-        htmlResult = tableToHtml(stdout, codeShapeId, 'exec-res-table')
-    } else {
-        htmlResult = `<pre>${stdout}</pre>`
+    const base64ImagePattern = /([A-Za-z0-9+/]{32,})$/; // Simple pattern to match base64 data
+    const matches = stdout.match(base64ImagePattern);
+    let tableData = stdout;
+    let imageData = '';
+
+    if (matches) {
+        imageData = `data:image/png;base64,${matches[0]}`;
+        tableData = stdout.substring(0, stdout.indexOf(matches[0])).trim();
     }
+
+    // Convert tableData to HTML (simple example, might need adjustment)
+    const tableHtml = `<pre>${tableData}</pre>`;
+
+    // Generate HTML for the image
+    const imageHtml = imageData ? `<img src="${imageData}" alt="vis-${codeShapeId}" width="300">` : '';
+
+    // Combine HTML results
+    htmlResult = `${tableHtml}${imageHtml}`;
 
     if (htmlResult === '') {
         throw Error('No result to display.')
     }
-    console.log(`[Exec]: ${resultType}\n${stdout?.slice(0, 128) || ''}...`)
+    // console.log(`[Exec]: ${resultType}\n${stdout?.slice(0, 128) || ''}...`)
 
     editor.updateShape<CodeEditorShape>({
         id: codeShapeId,
         type: 'code-editor-shape',
-        isLocked: true,
+        isLocked: false,
         props: {
             ...codeEditorShape.props,
             res: htmlResult,
@@ -250,8 +297,8 @@ export async function executeCode(editor: Editor, codeShapeId: TLShapeId) {
     })
 
     // set editing
-    // editor.setSelectedShapes([codeShapeId])
-    // editor.setEditingShape(codeShapeId)
+    editor.setSelectedShapes([codeShapeId])
+    editor.setEditingShape(codeShapeId)
 
     return htmlResult;
 }

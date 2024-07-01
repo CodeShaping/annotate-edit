@@ -26,7 +26,6 @@ export const db = getFirestore(app);
 // {userId}-{taskId}
 export const addCollection = async (collectionName: string, data: any) => {
     try {
-        console.log(`[Log] ${data.logType}`);
         const docRef = await addDoc(collection(db, collectionName), {
             ...data,
             createdAt: serverTimestamp()
