@@ -211,6 +211,7 @@ export class CodeEditorShapeUtil extends BaseBoxShapeUtil<CodeEditorShape> {
                         padding: '10px',
                         boxSizing: 'border-box',
                         zIndex: 10,
+                        whiteSpace: 'pre-wrap' // Ensure text wraps, including <pre> content
                     }}
                         onMouseDown={(e) => { handleShowResult(); e.stopPropagation(); }}
                         onPointerDown={(e) => { handleShowResult(); e.stopPropagation(); }}

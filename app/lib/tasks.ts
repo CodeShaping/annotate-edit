@@ -3,13 +3,14 @@ export interface Task {
     title: string;
     description: string;
     starterCode: string;
-  }
+}
 
 export const userStudyTasks: Task[] = [
+    // TASK 1
     {
         id: '1-1',
         title: 'Task 1-1',
-        description: 'Add a Due Date to Tasks',
+        description: 'Sort Tasks by new attribute: "Due Date"',
         starterCode: `class Task:
     def __init__(self, title, description):
         self.title = title
@@ -54,23 +55,22 @@ if __name__ == "__main__":
     {
         id: '1-2',
         title: 'Task 1-2',
-        description: 'Implement a Priority System',
+        description: 'Allow User to Update Task Details and Delete Tasks',
         starterCode: `from datetime import datetime
 
 class Task:
     def __init__(self, title, description, due_date=None):
         self.title = title
         self.description = description
-        self.due_date = due_date
         self.completed = False
+        self.due_date = datetime.strptime(due_date, "%Y-%m-%d") if due_date else None
 
     def mark_complete(self):
         self.completed = True
 
     def __str__(self):
         due_date_str = self.due_date.strftime("%Y-%m-%d") if self.due_date else "No due date"
-        return f"Task('{self.title}', Completed: {self.completed}, Due Date: {due_date_str})"
-
+        return f"Task('{self.title}', Due: {due_date_str}, Completed: {self.completed})"
 
 class TaskManager:
     def __init__(self):
@@ -89,329 +89,157 @@ class TaskManager:
             if task.completed:
                 print(task)
 
-
-# Example Usage
-if __name__ == "__main__":
-    manager = TaskManager()
-    manager.add_task("Buy groceries", "Milk, Bread, Eggs", datetime(2024, 7, 1))
-    manager.add_task("Read book", "Read 'Clean Code' book")
-    manager.list_tasks()
-    manager.tasks[0].mark_complete()
-    manager.list_completed_tasks()
-`,
-    },
-    {
-        id: '1-3',
-        title: 'Task 1-3',
-        description: 'Add a Feature to Update Task Details',
-        starterCode: `from datetime import datetime
-
-class Task:
-    def __init__(self, title, description, due_date=None, priority=1):
-        self.title = title
-        self.description = description
-        self.due_date = due_date
-        self.priority = priority
-        self.completed = False
-
-    def mark_complete(self):
-        self.completed = True
-
-    def __str__(self):
-        due_date_str = self.due_date.strftime("%Y-%m-%d") if self.due_date else "No due date"
-        return f"Task('{self.title}', Completed: {self.completed}, Due Date: {due_date_str}, Priority: {self.priority})"
-
-
-class TaskManager:
-    def __init__(self):
-        self.tasks = []
-
-    def add_task(self, title, description, due_date=None, priority=1):
-        task = Task(title, description, due_date, priority)
-        self.tasks.append(task)
-
-    def list_tasks(self):
-        for task in self.tasks:
-            print(task)
-
-    def list_completed_tasks(self):
-        for task in self.tasks:
-            if task.completed:
-                print(task)
-
-    def list_tasks_by_priority(self):
-        for task in sorted(self.tasks, key=lambda x: x.priority):
+    def list_with_priority(self):
+        sorted_tasks = sorted(self.tasks, key=lambda task: task.due_date or datetime.max)
+        for task in sorted_tasks:
             print(task)
 
 
-# Example Usage
 if __name__ == "__main__":
     manager = TaskManager()
-    manager.add_task("Buy groceries", "Milk, Bread, Eggs", datetime(2024, 7, 1), 2)
-    manager.add_task("Read book", "Read 'Clean Code' book", priority=1)
+    manager.add_task("Buy groceries", "Milk, Bread, Eggs", "2023-05-01")
+    manager.add_task("Read book", "Read 'Clean Code' book", "2023-04-25")
+    manager.add_task("Pay bills", "Electricity and Internet", "2023-04-20")
+    manager.add_task("Exercise", "Go for a run", None)
+    print("All Tasks:")
     manager.list_tasks()
-    manager.tasks[0].mark_complete()
-    manager.list_completed_tasks()
-    print("\nTasks by Priority:")
-    manager.list_tasks_by_priority()
-`,
+    print("Tasks with Priority:")
+    manager.list_with_priority()`,
     },
-    {
-        id: '1-4',
-        title: 'Task 1-4',
-        description: 'Implement Task Deletion',
-        starterCode: `from datetime import datetime
-
-class Task:
-    def __init__(self, title, description, due_date=None, priority=1):
-        self.title = title
-        self.description = description
-        self.due_date = due_date
-        self.priority = priority
-        self.completed = False
-
-    def mark_complete(self):
-        self.completed = True
-
-    def update_details(self, title=None, description=None, due_date=None, priority=None):
-        if title:
-            self.title = title
-        if description:
-            self.description = description
-        if due_date:
-            self.due_date = due_date
-        if priority:
-            self.priority = priority
-
-    def __str__(self):
-        due_date_str = self.due_date.strftime("%Y-%m-%d") if self.due_date else "No due date"
-        return f"Task('{self.title}', Completed: {self.completed}, Due Date: {due_date_str}, Priority: {self.priority})"
-
-
-class TaskManager:
-    def __init__(self):
-        self.tasks = []
-
-    def add_task(self, title, description, due_date=None, priority=1):
-        task = Task(title, description, due_date, priority)
-        self.tasks.append(task)
-
-    def list_tasks(self):
-        for task in self.tasks:
-            print(task)
-
-    def list_completed_tasks(self):
-        for task in self.tasks:
-            if task.completed:
-                print(task)
-
-    def update_task(self, task_index, title=None, description=None, due_date=None, priority=None):
-        if 0 <= task_index < len(self.tasks):
-            self.tasks[task_index].update_details(title, description, due_date, priority)
-        else:
-            print("Invalid task index")
-
-# Example Usage
-if __name__ == "__main__":
-    manager = TaskManager()
-    manager.add_task("Buy groceries", "Milk, Bread, Eggs", datetime(2024, 7, 1), 2)
-    manager.add_task("Read book", "Read 'Clean Code' book", priority=1)
-    manager.list_tasks()
-    manager.update_task(0, title="Buy weekly groceries", description="Milk, Bread, Eggs, Butter", priority=3)
-    manager.list_tasks()
-`,
-    },
+    // TASK 2 
     {
         id: '2-1',
         title: 'Task 2-1',
-        description: 'Add a Function to Normalize Prices',
-        starterCode: `from typing import List, Dict
+        description: 'Implement & Support the Manhattan Distance Metric',
+        starterCode: `import numpy as np
+from typing import List, Tuple
 
-# Sample data
-sales_data = [
-    {"item": "apple", "quantity": 10, "price_per_unit": 0.5},
-    {"item": "banana", "quantity": 5, "price_per_unit": 0.2},
-    {"item": "cherry", "quantity": 20, "price_per_unit": 1.5},
-]
+class NearestNeighborRetriever:
+    def __init__(self, data: List[Tuple[float]]):
+        self.data = np.array(data)
+    
+    def euclidean_distance(self, point1: np.ndarray, point2: np.ndarray) -> float:
+        return np.sqrt(np.sum((point1 - point2) ** 2))
+    
+    def find_nearest_neighbors(self, query_point: Tuple[float], k: int) -> List[Tuple[float]]:
+        distances = [self.euclidean_distance(np.array(query_point), point) for point in self.data]
+        nearest_indices = np.argsort(distances)[:k]
+        return [self.data[i] for i in nearest_indices]
 
-def filter_data(data: List[Dict], min_quantity: int) -> List[Dict]:
-    return [item for item in data if item["quantity"] >= min_quantity]
-
-def transform_data(data: List[Dict]) -> List[Dict]:
-    for item in data:
-        item["total_price"] = item["quantity"] * item["price_per_unit"]
-    return data
-
-def summarize_data(data: List[Dict]) -> Dict:
-    total_quantity = sum(item["quantity"] for item in data)
-    total_sales = sum(item["total_price"] for item in data)
-    return {"total_quantity": total_quantity, "total_sales": total_sales}
-
-# Example usage
-filtered_data = filter_data(sales_data, 10)
-transformed_data = transform_data(filtered_data)
-summary = summarize_data(transformed_data)
-
-print("Filtered Data:", filtered_data)
-print("Transformed Data:", transformed_data)
-print("Summary:", summary)
+# Example Usage
+data_points = [(1.0, 2.0), (2.0, 3.0), (3.0, 4.0), (6.0, 7.0)]
+nn_retriever = NearestNeighborRetriever(data_points)
+query_point = (2.5, 3.5)
+k = 2
+nearest_neighbors = nn_retriever.find_nearest_neighbors(query_point, k)
+print(f"Nearest neighbors to {query_point}: {nearest_neighbors}")
 `,
     },
     {
         id: '2-2',
         title: 'Task 2-2',
-        description: 'Add a Function to Calculate Discounts',
-        starterCode: `from typing import List, Dict
+        description: 'Support Datatype with Categorical Features (use one-hot encoding)',
+        starterCode: `import numpy as np
+from typing import List, Tuple
 
-# Sample data
-sales_data = [
-    {"item": "apple", "quantity": 10, "price_per_unit": 0.5},
-    {"item": "banana", "quantity": 5, "price_per_unit": 0.2},
-    {"item": "cherry", "quantity": 20, "price_per_unit": 1.5},
-]
+class NearestNeighborRetriever:
+    def __init__(self, data: List[Tuple[float]]):
+        self.data = np.array(data)
+    
+    def euclidean_distance(self, point1: np.ndarray, point2: np.ndarray) -> float:
+        return np.sqrt(np.sum((point1 - point2) ** 2))
+    
+    def manhattan_distance(self, point1: np.ndarray, point2: np.ndarray) -> float:
+        return np.sum(np.abs(point1 - point2))
+    
+    def find_nearest_neighbors(self, query_point: Tuple[float], k: int, distance_metric="euclidean") -> List[Tuple[float]]:
+        if distance_metric == "euclidean":
+            distances = [self.euclidean_distance(np.array(query_point), point) for point in self.data]
+        elif distance_metric == "manhattan":
+            distances = [self.manhattan_distance(np.array(query_point), point) for point in self.data]
+        else:
+            raise ValueError("Unsupported distance metric")
+        nearest_indices = np.argsort(distances)[:k]
+        return [self.data[i] for i in nearest_indices]
 
-def filter_data(data: List[Dict], min_quantity: int) -> List[Dict]:
-    return [item for item in data if item["quantity"] >= min_quantity]
-
-def normalize_prices(data: List[Dict]) -> List[Dict]:
-    max_price = max(item["price_per_unit"] for item in data)
-    for item in data:
-        item["price_per_unit"] /= max_price
-    return data
-
-def transform_data(data: List[Dict]) -> List[Dict]:
-    for item in data:
-        item["total_price"] = item["quantity"] * item["price_per_unit"]
-    return data
-
-def summarize_data(data: List[Dict]) -> Dict:
-    total_quantity = sum(item["quantity"] for item in data)
-    total_sales = sum(item["total_price"] for item in data)
-    return {"total_quantity": total_quantity, "total_sales": total_sales}
-
-# Example usage
-filtered_data = filter_data(sales_data, 10)
-normalized_data = normalize_prices(filtered_data)
-transformed_data = transform_data(normalized_data)
-summary = summarize_data(transformed_data)
-
-print("Filtered Data:", filtered_data)
-print("Normalized Data:", normalized_data)
-print("Transformed Data:", transformed_data)
-print("Summary:", summary)
+# Example Usage
+data_points = [(1.0, 2.0), (2.0, 3.0), (3.0, 4.0), (6.0, 7.0)]
+nn_retriever = NearestNeighborRetriever(data_points)
+query_point = (2.5, 3.5)
+k = 2
+nearest_neighbors = nn_retriever.find_nearest_neighbors(query_point, k, distance_metric="manhattan")
+print(f"Nearest neighbors to {query_point} using Manhattan distance: {nearest_neighbors}")
 `,
     },
+    // TASK 3
     {
-        id: '2-3',
-        title: 'Task 2-3',
-        description: 'Add a Function to Group Data by Item',
-        starterCode: `from typing import List, Dict
+        id: '3-1',
+        title: 'Task 3-1',
+        description: 'Impute Missing Data with Average Feature Value & Feature Engineering for Quadratic Terms',
+        starterCode: `import numpy as np
+import pandas as pd
+from typing import List, Dict
 
 # Sample data
-sales_data = [
-    {"item": "apple", "quantity": 10, "price_per_unit": 0.5},
-    {"item": "banana", "quantity": 5, "price_per_unit": 0.2},
-    {"item": "cherry", "quantity": 20, "price_per_unit": 1.5},
-]
+data = {
+    'feature1': [1.0, 2.0, np.nan, 4.0, 5.0],
+    'feature2': [2.0, np.nan, 3.0, 4.0, 5.0],
+    'label': [0, 1, 0, 1, 1]
+}
+df = pd.DataFrame(data)
 
-def filter_data(data: List[Dict], min_quantity: int) -> List[Dict]:
-    return [item for item in data if item["quantity"] >= min_quantity]
+class DataProcessor:
+    def __init__(self, dataframe: pd.DataFrame):
+        self.dataframe = dataframe
 
-def normalize_prices(data: List[Dict]) -> List[Dict]:
-    max_price = max(item["price_per_unit"] for item in data)
-    for item in data:
-        item["price_per_unit"] /= max_price
-    return data
-
-def apply_discount(data: List[Dict], discount_rate: float) -> List[Dict]:
-    for item in data:
-        item["price_per_unit"] *= (1 - discount_rate)
-    return data
-
-def transform_data(data: List[Dict]) -> List[Dict]:
-    for item in data:
-        item["total_price"] = item["quantity"] * item["price_per_unit"]
-    return data
-
-def summarize_data(data: List[Dict]) -> Dict:
-    total_quantity = sum(item["quantity"] for item in data)
-    total_sales = sum(item["total_price"] for item in data)
-    return {"total_quantity": total_quantity, "total_sales": total_sales}
+    def preprocess(self) -> pd.DataFrame:
+        return self.dataframe
 
 # Example usage
-filtered_data = filter_data(sales_data, 10)
-normalized_data = normalize_prices(filtered_data)
-discounted_data = apply_discount(normalized_data, 0.1)
-transformed_data = transform_data(discounted_data)
-summary = summarize_data(transformed_data)
-
-print("Filtered Data:", filtered_data)
-print("Normalized Data:", normalized_data)
-print("Discounted Data:", discounted_data)
-print("Transformed Data:", transformed_data)
-print("Summary:", summary)
-`,
+processor = DataProcessor(df)
+processed_df = processor.preprocess()
+print(processed_df)`,
     },
     {
-        id: '2-4',
-        title: 'Task 2-4',
-        description: 'Add a Function to Export Data to JSON',
-        starterCode: `from typing import List, Dict
-from collections import defaultdict
+        id: '3-2',
+        title: 'Task 3-2',
+        description: 'Visualize Data Distribution & Implement Feature Scaling',
+        starterCode: `import numpy as np
+import pandas as pd
+from typing import List, Dict
 
 # Sample data
-sales_data = [
-    {"item": "apple", "quantity": 10, "price_per_unit": 0.5},
-    {"item": "banana", "quantity": 5, "price_per_unit": 0.2},
-    {"item": "cherry", "quantity": 20, "price_per_unit": 1.5},
-]
+data = {
+    'feature1': [1.0, 2.0, np.nan, 4.0, 5.0],
+    'feature2': [2.0, np.nan, 3.0, 4.0, 5.0],
+    'label': [0, 1, 0, 1, 1]
+}
+df = pd.DataFrame(data)
 
-def filter_data(data: List[Dict], min_quantity: int) -> List[Dict]:
-    return [item for item in data if item["quantity"] >= min_quantity]
+class DataProcessor:
+    def __init__(self, dataframe: pd.DataFrame):
+        self.dataframe = dataframe
 
-def normalize_prices(data: List[Dict]) -> List[Dict]:
-    max_price = max(item["price_per_unit"] for item in data)
-    for item in data:
-        item["price_per_unit"] /= max_price
-    return data
+    def impute_missing_values(self) -> pd.DataFrame:
+        for column in self.dataframe.columns:
+            mean_value = self.dataframe[column].mean()
+            self.dataframe[column].fillna(mean_value, inplace=True)
+        return self.dataframe
 
-def apply_discount(data: List[Dict], discount_rate: float) -> List[Dict]:
-    for item in data:
-        item["price_per_unit"] *= (1 - discount_rate)
-    return data
+    def create_quadratic_terms(self) -> pd.DataFrame:
+        for column in self.dataframe.columns:
+            self.dataframe[f'{column}_squared'] = self.dataframe[column] ** 2
+        return self.dataframe
 
-def transform_data(data: List[Dict]) -> List[Dict]:
-    for item in data:
-        item["total_price"] = item["quantity"] * item["price_per_unit"]
-    return data
-
-def group_by_item(data: List[Dict]) -> List[Dict]:
-    grouped_data = defaultdict(lambda: {"quantity": 0, "total_price": 0})
-    for item in data:
-        grouped_data[item["item"]]["quantity"] += item["quantity"]
-        grouped_data[item["item"]]["total_price"] += item["total_price"]
-    return [{"item": item, "quantity": details["quantity"], "total_price": details["total_price"]}
-            for item, details in grouped_data.items()]
-
-def summarize_data(data: List[Dict]) -> Dict:
-    total_quantity = sum(item["quantity"] for item in data)
-    total_sales = sum(item["total_price"] for item in data)
-    return {"total_quantity": total_quantity, "total_sales": total_sales}
+    def preprocess(self) -> pd.DataFrame:
+        self.impute_missing_values()
+        self.create_quadratic_terms()
+        return self.dataframe
 
 # Example usage
-filtered_data = filter_data(sales_data, 10)
-normalized_data = normalize_prices(filtered_data)
-discounted_data = apply_discount(normalized_data, 0.1)
-transformed_data = transform_data(discounted_data)
-grouped_data = group_by_item(transformed_data)
-summary = summarize_data(grouped_data)
-
-print("Filtered Data:", filtered_data)
-print("Normalized Data:", normalized_data)
-print("Discounted Data:", discounted_data)
-print("Transformed Data:", transformed_data)
-print("Grouped Data:", grouped_data)
-print("Summary:", summary)
+processor = DataProcessor(df)
+processed_df = processor.preprocess()
+print(processed_df)
 `,
     },
 ];
