@@ -16,7 +16,7 @@ export function ShareButtonGroup({
  }) {
     return (
         <div className="shareButtonGroup">
-            <TaskSelector onTaskChange={onTaskChange} />
+            <TaskSelector onTaskChange={onTaskChange} onStoreLog={onStoreLog} />
             <LockCodeEditorButton codeShapeId={codeShapeId} onStoreLog={onStoreLog} />
             <ExecuteCodeButton codeShapeId={codeShapeId} onStoreLog={onStoreLog} />
             <MakeRealButton codeShapeId={codeShapeId} onStoreLog={onStoreLog} />

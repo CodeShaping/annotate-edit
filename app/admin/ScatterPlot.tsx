@@ -11,6 +11,7 @@ const logTypeToNumeric = {
     'generate-param': 6,
     'generate-code': 7,
     'generate-error': 8,
+    'switch-task': 9,
 };
 const numericToLogType = [
     null, // 0 index is not used, assuming your mapping starts at 1
@@ -22,6 +23,7 @@ const numericToLogType = [
     'generate-param',
     'generate-code',
     'generate-error',
+    'switch-task',
 ];
 
 const ScatterPlot = ({ logs }: { logs: LogEvent[] }) => {

@@ -36,3 +36,13 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+
+# ipynb
+.ipynb_checkpoints
+__pycache__/
+*.pyc
+
+
+# vscode
+.vscode/

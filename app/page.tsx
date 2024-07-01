@@ -134,7 +134,7 @@ function InsideOfContext({ newShapeId, currentTask }: { newShapeId: TLShapeId, c
 
 
 export type LogType = 'edit' | 'exit-edit' | 'compile' | 'compiled-result' | 'compiled-error'
-	| 'generate-param' | 'generate-code' | 'generate-error'
+	| 'generate-param' | 'generate-code' | 'generate-error' | 'switch-task'
 export interface LogEvent {
 	type: LogType
 	userId: string
