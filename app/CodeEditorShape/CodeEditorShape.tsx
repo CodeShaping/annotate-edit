@@ -50,7 +50,7 @@ export class CodeEditorShapeUtil extends BaseBoxShapeUtil<CodeEditorShape> {
             h: 300,
             code: '',
             prevCode: '',
-            res: '1243',
+            res: '',
         }
     }
 
@@ -100,7 +100,7 @@ export class CodeEditorShapeUtil extends BaseBoxShapeUtil<CodeEditorShape> {
         }, [isEditing])
 
         useEffect(() => {
-            console.log('shape.props.code', shape.props.code)
+            // console.log('shape.props.code', shape.props.code)
             // update the height
             const view = codeMirrorRef.current?.view
             this.editor.updateShape<CodeEditorShape>({
@@ -118,24 +118,30 @@ export class CodeEditorShapeUtil extends BaseBoxShapeUtil<CodeEditorShape> {
             const editor = document.getElementById(`editor-${shape.id}`);
             codeMirrorRef.current?.view?.focus();
             const resultView = document.getElementById('result-view');
-            if (resultView?.style.width === '15px') {
+            if (resultView?.style.height === '15px') {
                 if (editor) {
-                    editor.style.width = `${shape.props.w / 1.5}px`;
+                    editor.style.height = `${shape.props.h / 1.5}px`;
                 }
                 if (resultView) {
-                    resultView.style.width = shape.props.w - (shape.props.w / 1.5) + 'px';
+                    resultView.style.height = shape.props.h - (shape.props.h / 1.5) + 'px';
                 }
                 return;
             } else {
                 if (editor) {
-                    editor.style.width = `${shape.props.w - 20}px`;
+                    editor.style.height = `${shape.props.h - 20}px`;
                 }
 
                 if (resultView) {
-                    resultView.style.width = '15px';
+                    resultView.style.height = '15px';
                 }
             }
         }
+
+        useEffect(() => {
+            if (shape.props.res && shape.props.res !== '') {
+                handleShowResult();
+            }
+        }, [shape.props.res])
 
 
         const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
@@ -148,19 +154,20 @@ export class CodeEditorShapeUtil extends BaseBoxShapeUtil<CodeEditorShape> {
                     // display: 'grid',
                     gridTemplateColumns: '1fr 1fr',
                     alignItems: 'center',
-                    display: 'flex',
-                    flexDirection: 'row',
+                    // display: 'flex',
+                    // flexDirection: 'column',
+                    position: 'relative',
                     minHeight: `${shape.props.h}px`,
                 }}
             >
                 <div
-                    style={{ flexGrow: 1, position: 'relative', zIndex: 1 }}
+                    style={{ position: 'relative', zIndex: 1 }}
                 >
                     <CodeMirror
                         id={`editor-${shape.id}`}
                         ref={codeMirrorRef}
                         value={shape.props.code}
-                        onPointerDown={(e) => e.stopPropagation()}
+                        // onPointerDown={(e) => e.stopPropagation()}
                         style={{
                             fontSize: '18px',
                             pointerEvents: isEditing ? 'auto' : 'none',
@@ -169,9 +176,10 @@ export class CodeEditorShapeUtil extends BaseBoxShapeUtil<CodeEditorShape> {
                             border: '1px solid var(--color-panel-contrast)',
                             borderRadius: 'var(--radius-2)',
                             backgroundColor: 'var(--color-background)',
-                            width: `${shape.props.w - 15}px`,
+                            width: `${shape.props.w}px`,
+                            height: `${shape.props.h - 15}px`
                         }}
-                        onTouchStart={(e) => { e.preventDefault(); return; }}
+                        // onTouchStart={(e) => { e.preventDefault(); return; }}
                         extensions={[...extensions]}
                         // maxWidth={`${shape.props.w}px`}
                         height={`${shape.props.h}px`}
@@ -188,21 +196,26 @@ export class CodeEditorShapeUtil extends BaseBoxShapeUtil<CodeEditorShape> {
                         }}
                     />
                 </div>
-                <div id="resizer" style={{
-                    width: '15px',
-                    height: '100vh',
-                    backgroundColor: '#ccc',
-                }}
-                    onMouseDown={(e) => { handleShowResult(); e.stopPropagation(); }}
-                    onPointerDown={(e) => { handleShowResult(); e.stopPropagation(); }}
-                    onTouchStart={(e) => { e.preventDefault(); e.stopPropagation(); }}
-                />
                 {shape.props.res && (
                     <div id="result-view" style={{
-                        flexGrow: 1,
+                        position: 'fixed',
+                        bottom: 0,
+                        left: 0,
+                        width: '100%',
+                        maxHeight: '50vh',
                         overflow: 'auto',
-                        borderLeft: '1px solid #ccc',
-                    }}>
+                        borderTop: '1px solid #ccc',
+                        fontFamily: '"Fira Code", "Consolas", "Monaco", monospace',
+                        backgroundColor: '#1e1e1e',
+                        color: '#dcdcdc',
+                        padding: '10px',
+                        boxSizing: 'border-box',
+                        zIndex: 10,
+                    }}
+                        onMouseDown={(e) => { handleShowResult(); e.stopPropagation(); }}
+                        onPointerDown={(e) => { handleShowResult(); e.stopPropagation(); }}
+                        onTouchStart={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                    >
                         <div dangerouslySetInnerHTML={{ __html: shape.props.res }}></div>
                     </div>
                 )}

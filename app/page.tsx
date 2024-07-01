@@ -5,11 +5,15 @@ import '@tldraw/tldraw/tldraw.css'
 import { ShareButtonGroup } from './components/ShareButtonGroup'
 import { PreviewShapeUtil } from './PreviewShape/PreviewShape'
 import { CodeEditorShapeUtil } from './CodeEditorShape/CodeEditorShape'
-import { useCallback, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Editor, useEditor, TLShape, TLShapeId, createShapeId, Box } from '@tldraw/tldraw'
 // import { useEditor } from 'tldraw'
 import { CodeEditorShape } from './CodeEditorShape/CodeEditorShape'
-const initalCode = `import numpy as np
+import { userStudyTasks, type Task } from './lib/tasks'
+import { addCollection } from './lib/firebase'
+
+
+const initalCode1 = `import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn import datasets
@@ -31,7 +35,7 @@ const Tldraw = dynamic(async () => (await import('@tldraw/tldraw')).Tldraw, {
 })
 
 const shapeUtils = [PreviewShapeUtil, CodeEditorShapeUtil]
-function InsideOfContext({ newShapeId }: { newShapeId: TLShapeId }) {
+function InsideOfContext({ newShapeId, currentTask }: { newShapeId: TLShapeId, currentTask: Task | null }) {
 	const editor = useEditor()
 
 	useEffect(() => {
@@ -45,17 +49,8 @@ function InsideOfContext({ newShapeId }: { newShapeId: TLShapeId }) {
 		})
 		const initialCameraPosition = editor.getCamera()
 
-
 		const handlePanning = (event: TouchEvent) => {
 			const currentCameraPosition = editor.getCamera();
-			// const box = editor.getSelectionPageBounds() as Box
-			// const codeEditor = editor.getShape<CodeEditorShape>(newShapeId)
-			// const box = {
-			// 	x: 0,
-			// 	y: 0,
-			// 	w: codeEditor?.props.w || window.innerWidth,
-			// 	h: codeEditor?.props.h || window.innerHeight,
-			// }
 			let newY = currentCameraPosition.y;
 
 			editor.setCamera({
@@ -65,24 +60,12 @@ function InsideOfContext({ newShapeId }: { newShapeId: TLShapeId }) {
 			})
 
 			if (event.touches.length > 1) {
+				if (event.target && (event.target as HTMLElement).className === 'cm-line') {
+					return
+				}
 				event.preventDefault();
 			}
 		};
-
-
-		editor.createShape<CodeEditorShape>({
-			id: newShapeId,
-			type: 'code-editor-shape',
-			isLocked: true,
-			x: 0,
-			y: 0,
-			props: {
-				prevCode: initalCode,
-				code: initalCode,
-				w: (window.innerWidth),
-				h: (window.innerHeight),
-			},
-		})
 		const handleResize = () => {
 			editor.updateShape<CodeEditorShape>({
 				id: newShapeId,
@@ -93,6 +76,21 @@ function InsideOfContext({ newShapeId }: { newShapeId: TLShapeId }) {
 				},
 			})
 		}
+
+
+		editor.createShape<CodeEditorShape>({
+			id: newShapeId,
+			type: 'code-editor-shape',
+			isLocked: true,
+			x: 0,
+			y: 0,
+			props: {
+				prevCode: userStudyTasks[3].starterCode,
+				code: userStudyTasks[3].starterCode,
+				w: (window.innerWidth),
+				h: (window.innerHeight * 2),
+			},
+		})
 
 		// when user panning
 		window.addEventListener('touchstart', handlePanning)
@@ -116,19 +114,89 @@ function InsideOfContext({ newShapeId }: { newShapeId: TLShapeId }) {
 		}
 	}, [])
 
+	useEffect(() => {
+		if (currentTask) {
+			console.log('currentTask', currentTask)
+			editor.updateShape<CodeEditorShape>({
+				id: newShapeId,
+				type: 'code-editor-shape',
+				isLocked: true,
+				props: {
+					prevCode: currentTask.starterCode,
+					code: currentTask.starterCode,
+				},
+			})
+		}
+	}, [currentTask])
+
 	return null
 }
 
+
+export type LogType = 'edit' | 'exit-edit' | 'compile' | 'compiled-result' | 'compiled-error'
+	| 'generate-param' | 'generate-code' | 'generate-error'
+export interface LogEvent {
+	type: LogType
+	userId: string
+	taskId: string
+	timestamp: number
+	data?: any
+	createdAt?: any
+}
+
+
+const newShapeId = createShapeId() as TLShapeId
 export default function App() {
-	const newShapeId = createShapeId() as TLShapeId
+	const [currentTask, setCurrentTask] = useState<Task | null>(null);
+	const taskId = useRef<string | null>(null);
+	const userId = useRef<string | null>(null);
+
+	// Parse URL for userId once on component mount
+	useEffect(() => {
+		const url = new URL(window.location.href);
+		const urlParams = new URLSearchParams(window.location.search);
+		const userIdFromUrl = urlParams.get('userId');
+		if (userIdFromUrl) {
+			userId.current = userIdFromUrl;
+		}
+		console.log('userIdFromUrl', userIdFromUrl);
+	}, []);
+
+	const handleTaskChange = (task: Task) => {
+		taskId.current = task.id;
+		setCurrentTask(task);
+	};
+
+	const handleStoreLog = async (log: any) => {
+		console.log('log', log, userId.current, taskId.current);
+		if (!taskId.current) {
+			console.error('No taskId or userId');
+			return;
+		}
+
+		const logEvent: LogEvent = {
+			type: log.type,
+			userId: userId.current || 'anonymous',
+			taskId: taskId.current,
+			data: log.data || null,
+			timestamp: Date.now(),
+		};
+
+		await addCollection(`${userId.current}_${taskId.current}`, logEvent);
+	};
+
 	return (
 		<div className="editor">
 			<Tldraw
 				persistenceKey="make-real"
-				shareZone={<ShareButtonGroup codeShapeId={newShapeId} />}
+				shareZone={<ShareButtonGroup
+					codeShapeId={newShapeId}
+					onTaskChange={handleTaskChange}
+					onStoreLog={handleStoreLog}
+				/>}
 				shapeUtils={shapeUtils}
 			>
-				<InsideOfContext {...{ newShapeId }} />
+				<InsideOfContext {...{ newShapeId, currentTask }} />
 			</Tldraw>
 		</div>
 	)

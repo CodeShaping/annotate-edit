@@ -193,13 +193,13 @@ const decideExecResultType = (result: any) => {
 
 
 export async function executeCode(editor: Editor, codeShapeId: TLShapeId) {
-    const selectedShapes = editor.getSelectedShapes()
+    // const selectedShapes = editor.getSelectedShapes()
 
-    if (selectedShapes.length === 0) throw Error('First select something to execute.')
+    // if (selectedShapes.length === 0) throw Error('First select something to execute.')
     await xPython.init();
 
 
-    const { maxX, midY } = editor.getSelectionPageBounds()!
+    // const { maxX, midY } = editor.getSelectionPageBounds()!
     // const newShapeId = createShapeId()
     // for (const shape of selectedShapes) {
     //     if (shape.type === 'code-editor-shape') {
@@ -237,14 +237,21 @@ export async function executeCode(editor: Editor, codeShapeId: TLShapeId) {
     if (htmlResult === '') {
         throw Error('No result to display.')
     }
-    console.log(`[Exec]: ${resultType}-${htmlResult}`);
+    console.log(`[Exec]: ${resultType}\n${stdout?.slice(0, 128) || ''}...`)
 
     editor.updateShape<CodeEditorShape>({
         id: codeShapeId,
         type: 'code-editor-shape',
+        isLocked: true,
         props: {
             ...codeEditorShape.props,
             res: htmlResult,
         },
     })
+
+    // set editing
+    // editor.setSelectedShapes([codeShapeId])
+    // editor.setEditingShape(codeShapeId)
+
+    return htmlResult;
 }

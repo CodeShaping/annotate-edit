@@ -10,7 +10,7 @@ import { CodeEditorShape } from '../CodeEditorShape/CodeEditorShape'
 
 import { downloadDataURLAsFile } from './downloadDataUrlAsFile'
 
-export async function makeReal(editor: Editor, apiKey: string, codeShapeId: TLShapeId, onStart: () => void, onFinish: () => void) {
+export async function makeReal(editor: Editor, apiKey: string, codeShapeId: TLShapeId, onStart: () => void, onFinish: () => void, onStoreLog: (log: any) => void) {
 	onStart()
 	editor.resetZoom()
 	// let originalLockStatus = false
@@ -25,13 +25,14 @@ export async function makeReal(editor: Editor, apiKey: string, codeShapeId: TLSh
 		}
 	})
 
-	let selectedShapes = editor.getSelectedShapes()
-	if (selectedShapes.length === 0) {
-		editor.selectAll()
-		selectedShapes = editor.getSelectedShapes()
-	}
+	// let selectedShapes = editor.getSelectedShapes()
+	// if (selectedShapes.length === 0) {
+	// 	editor.selectAll()
+	// 	// selectedShapes = editor.getSelectedShapes()
+	// }
+	let selectedShapes = shapes
 
-	console.log('selectedShapes2', selectedShapes)
+	// console.log('selectedShapes2', selectedShapes)
 
 	// const { maxX, midY } = editor.getSelectionPageBounds()!
 	const box = editor.getSelectionPageBounds() as Box;
@@ -46,8 +47,8 @@ export async function makeReal(editor: Editor, apiKey: string, codeShapeId: TLSh
 		return
 	}
 
-	const grid = { color: 'red', size: 100, labels: true }
-	addGridToSvg(svg, grid)
+	// const grid = { color: 'red', size: 100, labels: true }
+	// addGridToSvg(svg, grid)
 
 	if (!svg) throw Error(`Could not get the SVG.`)
 
@@ -60,6 +61,9 @@ export async function makeReal(editor: Editor, apiKey: string, codeShapeId: TLSh
 	const dataUrl = await blobToBase64(blob!)
 	// downloadDataURLAsFile(dataUrl, 'tldraw.png')
 
+	// pass down image
+	onStoreLog({ type: 'generate-param', data: dataUrl })
+
 	const previousCodeEditors = selectedShapes.filter((shape) => {
 		return shape.type === 'code-editor-shape'
 	}) as CodeEditorShape[]
@@ -69,10 +73,10 @@ export async function makeReal(editor: Editor, apiKey: string, codeShapeId: TLSh
 			image: dataUrl,
 			apiKey,
 			text: getSelectionAsText(editor),
-			grid,
+			// grid,
 			previousCodeEditors,
 		});
-		console.log('res\n', json.choices[0].message.content)
+		// console.log('res\n', json.choices[0].message.content)
 
 		if (!json) {
 			throw Error('Could not contact OpenAI.')
@@ -90,42 +94,8 @@ export async function makeReal(editor: Editor, apiKey: string, codeShapeId: TLSh
 			throw Error('Could not generate a design from those wireframes.')
 		}
 
-
-		// const lines = code.split('\n').length;
-		// const height = Math.max(300, lines * 1.4 * 16)
-
-		const newTempCode = `
-import numpy as np
-import pandas as pd
-from sklearn.model_selection import train_test_split
-from sklearn.linear_model import LogisticRegression
-
-# Load the dataset
-data = pd.read_csv('data.csv')
-
-# Preprocess the data by removing NaN values and duplicates
-def preprocess(data):
-    data = data.dropna()
-    data = data.drop_duplicates()
-    return data
-
-data = preprocess(data)
-
-# Select features and target variable
-X = data[['petal width', 'petal length']]
-y = data['target']
-
-# Split the data into training and testing sets
-X_train, X_test, y_train, y_test = train_test_split(
-    X, y, test_size=0.2, random_state=42)
-
-# Initialize and train the Logistic Regression model
-model = LogisticRegression()
-model.fit(X_train, y_train)
-`
-
+		onStoreLog({ type: 'generate-code', data: code })
 		const prevCode = editor.getShape<CodeEditorShape>(codeShapeId)?.props.code || ''
-		// await new Promise((resolve) => setTimeout(resolve, 1000))
 
 		editor.updateShape<CodeEditorShape>({
 			id: codeShapeId,
@@ -142,8 +112,8 @@ model.fit(X_train, y_train)
 		// editor.setEditingShape(codeShapeId)
 
 	} catch (e) {
-		// editor.deleteShape(newShapeId)
 		console.error(e)
+		onStoreLog({ type: 'compiled-error', data: (e as Error).message })
 		throw e
 	} finally {
 		onFinish()

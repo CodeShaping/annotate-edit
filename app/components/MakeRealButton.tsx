@@ -4,7 +4,7 @@ import { makeReal } from '../lib/makeReal'
 // import { CodeEditorShape } from '../CodeEditorShape/CodeEditorShape'
 import { TLShapeId } from '@tldraw/tldraw'
 
-export function MakeRealButton({ codeShapeId }: { codeShapeId: TLShapeId }) {
+export function MakeRealButton({ codeShapeId, onStoreLog }: { codeShapeId: TLShapeId, onStoreLog: (log: any) => void }) {
 	const editor = useEditor()
 	const { addToast } = useToasts()
 	const [isGenerating, setIsGenerating] = useState(false)
@@ -19,7 +19,7 @@ export function MakeRealButton({ codeShapeId }: { codeShapeId: TLShapeId }) {
 			const onStart = () => setIsGenerating(true);
 			const onFinish = () => setIsGenerating(false);
 			
-			await makeReal(editor, apiKey, codeShapeId, onStart, onFinish)
+			await makeReal(editor, apiKey, codeShapeId, onStart, onFinish, onStoreLog)
 		} catch (e) {
 			console.error(e)
 			addToast({

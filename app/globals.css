@@ -3,9 +3,9 @@
 	line-height: 1.5;
 	font-weight: 400;
 
-	color-scheme: light dark;
-	color: rgba(255, 255, 255, 0.87);
-	background-color: #242424;
+	color-scheme: light;
+	color: #2d3748;
+	background-color: #f7fafc;
 
 	font-synthesis: none;
 	text-rendering: optimizeLegibility;
@@ -18,6 +18,10 @@
 	touch-action: auto !important;
 } */
 
+.tlui-navigation-zone {
+	display: none !important;
+}
+
 .tl-background {
 	background-color: white !important;
 }
@@ -27,6 +31,18 @@
 }
 
 .tlui-debug-panel {
+	display: none !important;
+}
+
+.tlui-popover {
+	display: none !important;
+}
+
+.tlui-slider__container {
+	display: none !important;
+}
+
+.tlui-style-panel__section {
 	display: none !important;
 }
 
@@ -54,47 +70,78 @@
 	justify-content: center;
 }
 
+.taskSelector {
+	border: 2px solid rgb(77, 171, 247);
+	background-color: #f7fafc;
+	color: rgb(77, 171, 247);
+	padding: var(--space-3) var(--space-4);
+	margin: 5px;
+	border-radius: var(--radius-2);
+	font: inherit;
+	font-weight: 600;
+
+	cursor: pointer;
+	pointer-events: all;
+
+	transition: background-color 0.3s ease, transform 0.2s ease;
+	/* Smooth transitions */
+}
+
+.taskSelector:hover {
+	opacity: 0.8;
+}
+
+.taskSelector.active {
+	background-color: rgb(77, 171, 247);
+	color: white;
+}
+
+.taskSelectorDescription {
+	font-size: 10px;
+	color: #718096;
+}
+
 .makeRealButton {
-	background: var(--color-primary);
+	background: rgb(255, 192, 120);
 	color: white;
 	border: none;
 	font: inherit;
 	font-weight: 600;
 	padding: var(--space-3) var(--space-4);
 	border-radius: var(--radius-2);
-	margin: var(--space-3);
 	cursor: pointer;
 	pointer-events: all;
+	margin-right: var(--space-3);
 }
+
 .makeRealButton:hover {
 	opacity: 0.95;
 }
 
 .lockCodeEditorButton {
-	background: var(--color-primary);
+	background: rgb(77, 171, 247);
 	color: white;
 	border: none;
 	font: inherit;
 	font-weight: 600;
 	padding: var(--space-3) var(--space-4);
 	border-radius: var(--radius-2);
-	margin: var(--space-3);
 	cursor: pointer;
 	pointer-events: all;
 }
+
 .lockCodeEditorButton:hover {
 	opacity: 0.95;
 }
 
 .unlockCodeEditorButton {
-	background: var(--color-primary);
+	background: rgb(77, 171, 247);
 	color: white;
 	border: none;
 	font: inherit;
 	font-weight: 600;
 	padding: var(--space-3) var(--space-4);
 	border-radius: var(--radius-2);
-	margin: var(--space-3);
 	cursor: pointer;
 	pointer-events: all;
 }
@@ -104,7 +151,7 @@
 }
 
 .executeCodeButton {
-	background: var(--color-primary);
+	background: rgb(77, 171, 247);
 	color: white;
 	border: none;
 	font: inherit;
@@ -115,6 +162,7 @@
 	cursor: pointer;
 	pointer-events: all;
 }
+
 .executeCodeButton:hover {
 	opacity: 0.95;
 }
@@ -128,35 +176,35 @@
 	border-collapse: collapse;
 	border-radius: 15px;
 	overflow: hidden;
-  }
-  
-  .exec-res-table thead {
+}
+
+.exec-res-table thead {
 	font-size: 12px;
 	color: #4a5568;
 	background-color: #f7fafc;
-  }
-  
-  .exec-res-table thead th {
+}
+
+.exec-res-table thead th {
 	padding: 12px 15px;
-  }
-  
-  .exec-res-table tbody {
+}
+
+.exec-res-table tbody {
 	background-color: #fff;
-  }
-  
-  .exec-res-table tbody tr {
+}
+
+.exec-res-table tbody tr {
 	color: #718096;
 	border-bottom: 1px solid #e2e8f0;
-  }
-  
-  .exec-res-table tbody tr:hover {
+}
+
+.exec-res-table tbody tr:hover {
 	background-color: #f7fafc;
-  }
-  
-  .exec-res-table tbody td {
+}
+
+.exec-res-table tbody td {
 	padding: 12px 15px;
-  }
-  
+}
+
 
 
 
@@ -205,6 +253,7 @@
 .your-own-api-key__mobile {
 	bottom: 108px;
 }
+
 .your-own-api-key__mobile input {
 	bottom: 108px;
 	font-size: 16px !important;
@@ -250,4 +299,74 @@
 	align-items: center;
 	justify-content: center;
 	cursor: pointer;
+}
+
+
+
+/* ADMIN */
+.logs-table {
+	width: 100%;
+	text-align: left;
+	color: #000;
+	border-collapse: collapse;
+	border-radius: 15px;
+	overflow: hidden;
+	margin: 20px 0;
+}
+
+.logs-table thead {
+	font-size: 12px;
+	color: #fff;
+	background-color: rgb(77, 171, 247);
+}
+
+.logs-table thead th {
+	padding: 12px 15px;
+}
+
+.logs-table tbody {
+	background-color: #fff;
+}
+
+.logs-table tbody tr {
+	color: #718096;
+	border-bottom: 1px solid #e2e8f0;
+}
+
+.logs-table tbody tr:hover {
+	background-color: #f7fafc;
+}
+
+.logs-table tbody td {
+	padding: 12px 15px;
+}
+
+.logs-table .cell-content {
+	cursor: pointer;
+	position: relative;
+	max-height: 3em;
+	/* Adjust based on line height to fit two lines */
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.logs-table .cell-content.expanded {
+	max-height: none;
+	white-space: normal;
+}
+
+.logs-table .cell-content::after {
+	content: 'More';
+	position: absolute;
+	bottom: 0;
+	right: 0;
+	background-color: #f9f9f9;
+	padding: 0 5px;
+	cursor: pointer;
+}
+
+.logs-table .cell-content.expanded::after {
+	content: 'Less';
+	background-color: transparent;
 }
