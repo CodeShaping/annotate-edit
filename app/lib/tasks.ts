@@ -221,4 +221,197 @@ if __name__ == "__main__":
     manager.list_tasks()
 `,
     },
+    {
+        id: '2-1',
+        title: 'Task 2-1',
+        description: 'Add a Function to Normalize Prices',
+        starterCode: `from typing import List, Dict
+
+# Sample data
+sales_data = [
+    {"item": "apple", "quantity": 10, "price_per_unit": 0.5},
+    {"item": "banana", "quantity": 5, "price_per_unit": 0.2},
+    {"item": "cherry", "quantity": 20, "price_per_unit": 1.5},
 ]
+
+def filter_data(data: List[Dict], min_quantity: int) -> List[Dict]:
+    return [item for item in data if item["quantity"] >= min_quantity]
+
+def transform_data(data: List[Dict]) -> List[Dict]:
+    for item in data:
+        item["total_price"] = item["quantity"] * item["price_per_unit"]
+    return data
+
+def summarize_data(data: List[Dict]) -> Dict:
+    total_quantity = sum(item["quantity"] for item in data)
+    total_sales = sum(item["total_price"] for item in data)
+    return {"total_quantity": total_quantity, "total_sales": total_sales}
+
+# Example usage
+filtered_data = filter_data(sales_data, 10)
+transformed_data = transform_data(filtered_data)
+summary = summarize_data(transformed_data)
+
+print("Filtered Data:", filtered_data)
+print("Transformed Data:", transformed_data)
+print("Summary:", summary)
+`,
+    },
+    {
+        id: '2-2',
+        title: 'Task 2-2',
+        description: 'Add a Function to Calculate Discounts',
+        starterCode: `from typing import List, Dict
+
+# Sample data
+sales_data = [
+    {"item": "apple", "quantity": 10, "price_per_unit": 0.5},
+    {"item": "banana", "quantity": 5, "price_per_unit": 0.2},
+    {"item": "cherry", "quantity": 20, "price_per_unit": 1.5},
+]
+
+def filter_data(data: List[Dict], min_quantity: int) -> List[Dict]:
+    return [item for item in data if item["quantity"] >= min_quantity]
+
+def normalize_prices(data: List[Dict]) -> List[Dict]:
+    max_price = max(item["price_per_unit"] for item in data)
+    for item in data:
+        item["price_per_unit"] /= max_price
+    return data
+
+def transform_data(data: List[Dict]) -> List[Dict]:
+    for item in data:
+        item["total_price"] = item["quantity"] * item["price_per_unit"]
+    return data
+
+def summarize_data(data: List[Dict]) -> Dict:
+    total_quantity = sum(item["quantity"] for item in data)
+    total_sales = sum(item["total_price"] for item in data)
+    return {"total_quantity": total_quantity, "total_sales": total_sales}
+
+# Example usage
+filtered_data = filter_data(sales_data, 10)
+normalized_data = normalize_prices(filtered_data)
+transformed_data = transform_data(normalized_data)
+summary = summarize_data(transformed_data)
+
+print("Filtered Data:", filtered_data)
+print("Normalized Data:", normalized_data)
+print("Transformed Data:", transformed_data)
+print("Summary:", summary)
+`,
+    },
+    {
+        id: '2-3',
+        title: 'Task 2-3',
+        description: 'Add a Function to Group Data by Item',
+        starterCode: `from typing import List, Dict
+
+# Sample data
+sales_data = [
+    {"item": "apple", "quantity": 10, "price_per_unit": 0.5},
+    {"item": "banana", "quantity": 5, "price_per_unit": 0.2},
+    {"item": "cherry", "quantity": 20, "price_per_unit": 1.5},
+]
+
+def filter_data(data: List[Dict], min_quantity: int) -> List[Dict]:
+    return [item for item in data if item["quantity"] >= min_quantity]
+
+def normalize_prices(data: List[Dict]) -> List[Dict]:
+    max_price = max(item["price_per_unit"] for item in data)
+    for item in data:
+        item["price_per_unit"] /= max_price
+    return data
+
+def apply_discount(data: List[Dict], discount_rate: float) -> List[Dict]:
+    for item in data:
+        item["price_per_unit"] *= (1 - discount_rate)
+    return data
+
+def transform_data(data: List[Dict]) -> List[Dict]:
+    for item in data:
+        item["total_price"] = item["quantity"] * item["price_per_unit"]
+    return data
+
+def summarize_data(data: List[Dict]) -> Dict:
+    total_quantity = sum(item["quantity"] for item in data)
+    total_sales = sum(item["total_price"] for item in data)
+    return {"total_quantity": total_quantity, "total_sales": total_sales}
+
+# Example usage
+filtered_data = filter_data(sales_data, 10)
+normalized_data = normalize_prices(filtered_data)
+discounted_data = apply_discount(normalized_data, 0.1)
+transformed_data = transform_data(discounted_data)
+summary = summarize_data(transformed_data)
+
+print("Filtered Data:", filtered_data)
+print("Normalized Data:", normalized_data)
+print("Discounted Data:", discounted_data)
+print("Transformed Data:", transformed_data)
+print("Summary:", summary)
+`,
+    },
+    {
+        id: '2-4',
+        title: 'Task 2-4',
+        description: 'Add a Function to Export Data to JSON',
+        starterCode: `from typing import List, Dict
+from collections import defaultdict
+
+# Sample data
+sales_data = [
+    {"item": "apple", "quantity": 10, "price_per_unit": 0.5},
+    {"item": "banana", "quantity": 5, "price_per_unit": 0.2},
+    {"item": "cherry", "quantity": 20, "price_per_unit": 1.5},
+]
+
+def filter_data(data: List[Dict], min_quantity: int) -> List[Dict]:
+    return [item for item in data if item["quantity"] >= min_quantity]
+
+def normalize_prices(data: List[Dict]) -> List[Dict]:
+    max_price = max(item["price_per_unit"] for item in data)
+    for item in data:
+        item["price_per_unit"] /= max_price
+    return data
+
+def apply_discount(data: List[Dict], discount_rate: float) -> List[Dict]:
+    for item in data:
+        item["price_per_unit"] *= (1 - discount_rate)
+    return data
+
+def transform_data(data: List[Dict]) -> List[Dict]:
+    for item in data:
+        item["total_price"] = item["quantity"] * item["price_per_unit"]
+    return data
+
+def group_by_item(data: List[Dict]) -> List[Dict]:
+    grouped_data = defaultdict(lambda: {"quantity": 0, "total_price": 0})
+    for item in data:
+        grouped_data[item["item"]]["quantity"] += item["quantity"]
+        grouped_data[item["item"]]["total_price"] += item["total_price"]
+    return [{"item": item, "quantity": details["quantity"], "total_price": details["total_price"]}
+            for item, details in grouped_data.items()]
+
+def summarize_data(data: List[Dict]) -> Dict:
+    total_quantity = sum(item["quantity"] for item in data)
+    total_sales = sum(item["total_price"] for item in data)
+    return {"total_quantity": total_quantity, "total_sales": total_sales}
+
+# Example usage
+filtered_data = filter_data(sales_data, 10)
+normalized_data = normalize_prices(filtered_data)
+discounted_data = apply_discount(normalized_data, 0.1)
+transformed_data = transform_data(discounted_data)
+grouped_data = group_by_item(transformed_data)
+summary = summarize_data(grouped_data)
+
+print("Filtered Data:", filtered_data)
+print("Normalized Data:", normalized_data)
+print("Discounted Data:", discounted_data)
+print("Transformed Data:", transformed_data)
+print("Grouped Data:", grouped_data)
+print("Summary:", summary)
+`,
+    },
+];

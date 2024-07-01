@@ -93,7 +93,10 @@ const ScatterPlot = ({ logs }: { logs: LogEvent[] }) => {
         }
     } as any;
 
-    return <Scatter data={data} options={options} />;
+    return <Scatter 
+    data={data} 
+    options={options} 
+    />;
 };
 
 export default ScatterPlot;

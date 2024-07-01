@@ -43,7 +43,6 @@ export default function Admin() {
         console.log('taskId', taskId, userId.current);
         getAllDataFromCollection(`${userId.current}_${taskId}`).then((data) => {
             // sort by timestamp
-
             setLogs(data.sort((a: any, b: any) => a.timestamp - b.timestamp) as LogEvent[]);
             setFilteredLogs(data.sort((a: any, b: any) => a.timestamp - b.timestamp) as LogEvent[]);
         });
@@ -70,11 +69,8 @@ export default function Admin() {
     }
 
     const showFullImage = (base64Data: string) => {
-        // Create a new window or tab
         const imageWindow = window.open('');
-        // Check if the window was successfully opened
         if (imageWindow) {
-            // Set the document's body content to the image using the base64 data
             imageWindow.document.write(`<img src="${base64Data}" alt="Generated Image" style="max-width:100%; height:auto;">`);
         }
     };
@@ -135,7 +131,7 @@ export default function Admin() {
                 if (log.data && log.data.startsWith("data:image")) { // Check if log.data is a base64 image
                     const base64Data = log.data.split(',')[1]; // Get the base64 part
                     const fileName = `${userId.current}_${task.id}_${index}.png`; // Assuming PNG format
-                    imgFolder.file(fileName, base64Data, { base64: true });
+                    imgFolder?.file(fileName, base64Data, { base64: true });
                 }
             });
         }
