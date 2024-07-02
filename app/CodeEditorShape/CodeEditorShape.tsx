@@ -100,48 +100,57 @@ export class CodeEditorShapeUtil extends BaseBoxShapeUtil<CodeEditorShape> {
         }, [isEditing])
 
         useEffect(() => {
-            // console.log('shape.props.code', shape.props.code)
             // update the height
             const view = codeMirrorRef.current?.view
+            // console.log('shape.props.code', shape.props.code, view?.contentHeight)
             this.editor.updateShape<CodeEditorShape>({
                 id: shape.id,
                 type: 'code-editor-shape',
+                isLocked: false,
                 props: {
                     ...shape.props,
-                    h: Math.max(window.innerHeight, (view?.contentHeight || shape.props.h))
+                    // h: Math.max(window.innerHeight, (view?.contentHeight || shape.props.h))
+                    h: view?.contentHeight || shape.props.h
                 }
             })
+
+            this.editor.updateShape<CodeEditorShape>({
+                id: shape.id,
+                type: 'code-editor-shape',
+                isLocked: true,
+            })
+
         }, [shape.props.code])
 
 
-        function handleShowResult() {
-            const editor = document.getElementById(`editor-${shape.id}`);
-            codeMirrorRef.current?.view?.focus();
-            const resultView = document.getElementById('result-view');
-            if (resultView?.style.height === '15px') {
-                if (editor) {
-                    editor.style.height = `${shape.props.h / 1.5}px`;
-                }
-                if (resultView) {
-                    resultView.style.height = shape.props.h - (shape.props.h / 1.5) + 'px';
-                }
-                return;
-            } else {
-                if (editor) {
-                    editor.style.height = `${shape.props.h - 20}px`;
-                }
+        // function handleShowResult() {
+        //     const editor = document.getElementById(`editor-${shape.id}`);
+        //     codeMirrorRef.current?.view?.focus();
+        //     const resultView = document.getElementById('result-view');
+        //     if (resultView?.style.height === '15px') {
+        //         if (editor) {
+        //             editor.style.height = `${shape.props.h / 1.5}px`;
+        //         }
+        //         if (resultView) {
+        //             resultView.style.height = shape.props.h - (shape.props.h / 1.5) + 'px';
+        //         }
+        //         return;
+        //     } else {
+        //         if (editor) {
+        //             editor.style.height = `${shape.props.h - 20}px`;
+        //         }
 
-                if (resultView) {
-                    resultView.style.height = '15px';
-                }
-            }
-        }
+        //         if (resultView) {
+        //             resultView.style.height = '15px';
+        //         }
+        //     }
+        // }
 
-        useEffect(() => {
-            if (shape.props.res && shape.props.res !== '') {
-                handleShowResult();
-            }
-        }, [shape.props.res])
+        // useEffect(() => {
+        //     if (shape.props.res && shape.props.res !== '') {
+        //         handleShowResult();
+        //     }
+        // }, [shape.props.res])
 
 
         const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
@@ -177,7 +186,7 @@ export class CodeEditorShapeUtil extends BaseBoxShapeUtil<CodeEditorShape> {
                             borderRadius: 'var(--radius-2)',
                             backgroundColor: 'var(--color-background)',
                             width: `${shape.props.w}px`,
-                            height: `${shape.props.h - 15}px`
+                            height: `${shape.props.h+10}px`
                         }}
                         // onTouchStart={(e) => { e.preventDefault(); return; }}
                         extensions={[...extensions]}
@@ -198,11 +207,9 @@ export class CodeEditorShapeUtil extends BaseBoxShapeUtil<CodeEditorShape> {
                 </div>
                 {shape.props.res && (
                     <div id="result-view" style={{
-                        position: 'absolute',
-                        bottom: 0,
-                        left: 0,
                         width: '100%',
-                        maxHeight: '50vh',
+                        minHeight: '20vh',
+                        maxHeight: '60vh',
                         overflow: 'auto',
                         borderTop: '5px solid #ccc',
                         fontFamily: '"Fira Code", "Consolas", "Monaco", monospace',
@@ -215,9 +222,11 @@ export class CodeEditorShapeUtil extends BaseBoxShapeUtil<CodeEditorShape> {
                     }}
                         contentEditable={false}
                         tabIndex={-1}
-                        onMouseDown={(e) => { handleShowResult(); e.stopPropagation(); }}
-                        onPointerDown={(e) => { handleShowResult(); e.stopPropagation(); }}
-                        onTouchStart={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                        onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); return; }}
+                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); return; }}
+                        onTouchStart={(e) => { e.preventDefault(); e.stopPropagation(); return; }}
+                        // onPointerDown={(e) => { handleShowResult(); e.stopPropagation(); }}
+                        // onTouchStart={(e) => { e.preventDefault(); e.stopPropagation(); }}
                     >
                         <div dangerouslySetInnerHTML={{ __html: shape.props.res }}></div>
                     </div>

@@ -79,7 +79,7 @@ bytes_io.seek(0)
 
 base64_encoded_spectrogram = base64.b64encode(bytes_io.read())
 
-print(base64_encoded_spectrogram.decode('utf-8'))
+print('data:image/jpg;base64,' + base64_encoded_spectrogram.decode('utf-8'))
 `
 
 function tableToHtml(output: string, id: TLShapeId, className: string): string {
@@ -262,34 +262,31 @@ export async function executeCode(editor: Editor, codeShapeId: TLShapeId) {
     const resultType = decideExecResultType(stdout) as CodeExecResultType;
 
     let htmlResult = '';
-    const base64ImagePattern = /([A-Za-z0-9+/]{32,})$/; // Simple pattern to match base64 data
-    const matches = stdout.match(base64ImagePattern);
-    let tableData = stdout;
-    let imageData = '';
+    // Match only jpg images in base64 format
+    const images = stdout.match(/data:image\/jpg;base64,[^"]+/g) || [];
+    let nonImageContent = stdout;
 
-    if (matches) {
-        imageData = `data:image/png;base64,${matches[0]}`;
-        tableData = stdout.substring(0, stdout.indexOf(matches[0])).trim();
-    }
+    // Generate HTML for each image
+    const imageHtml = images.map(image => `<img src="${image}" alt="image" width="400">`).join('');
 
-    // Convert tableData to HTML (simple example, might need adjustment)
-    const tableHtml = `<pre>${tableData}</pre>`;
+    // Remove image data from the non-image content
+    images.forEach(image => {
+        nonImageContent = nonImageContent.replace(image, '');
+    });
 
-    // Generate HTML for the image
-    const imageHtml = imageData ? `<img src="${imageData}" alt="vis-${codeShapeId}" width="300">` : '';
+    // Wrap non-image content in a <pre> tag
+    const nonImageHtml = `<pre>${nonImageContent.trim()}</pre>`;
 
     // Combine HTML results
-    htmlResult = `${tableHtml}${imageHtml}`;
+    htmlResult = `${nonImageHtml}${imageHtml}`;
 
     if (htmlResult === '') {
-        throw Error('No result to display.')
+        throw Error('No result to display.');
     }
-    // console.log(`[Exec]: ${resultType}\n${stdout?.slice(0, 128) || ''}...`)
-
     editor.updateShape<CodeEditorShape>({
         id: codeShapeId,
         type: 'code-editor-shape',
-        isLocked: false,
+        isLocked: true,
         props: {
             ...codeEditorShape.props,
             res: htmlResult,
@@ -297,8 +294,8 @@ export async function executeCode(editor: Editor, codeShapeId: TLShapeId) {
     })
 
     // set editing
-    editor.setSelectedShapes([codeShapeId])
-    editor.setEditingShape(codeShapeId)
+    // editor.setSelectedShapes([codeShapeId])
+    // editor.setEditingShape(codeShapeId)
 
     return htmlResult;
 }

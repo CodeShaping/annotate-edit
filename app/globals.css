@@ -102,16 +102,16 @@
 }
 
 .makeRealButton {
-	background: rgb(255, 192, 120);
+	background: rgb(254 165 24);
 	color: white;
 	border: none;
 	font: inherit;
-	font-weight: 600;
+	font-weight: 800;
 	padding: var(--space-3) var(--space-4);
 	border-radius: var(--radius-2);
 	cursor: pointer;
 	pointer-events: all;
-	margin-right: var(--space-3);
+	margin: 0 var(--space-3);
 }
 
 .makeRealButton:hover {

@@ -34,7 +34,7 @@ export function MakeRealButton({ codeShapeId, onStoreLog }: { codeShapeId: TLSha
 
 	return (
 		<button className="makeRealButton" onClick={handleClick}>
-			{isGenerating ? 'Generating...' : 'Generate'}
+			{isGenerating ? 'Generating...' : '🪄 Generate'}
 		</button>
 	)
 }

@@ -39,7 +39,7 @@ export function ExecuteCodeButton({ codeShapeId, onStoreLog }: { codeShapeId: TL
 
 	return (
 		<button className="executeCodeButton" onClick={handleClick}>
-			{isExecuting ? 'Executing...' : 'Execute'}
+			{isExecuting ? 'Running...' : '▶️ Run'}
 		</button>
 	)
 }

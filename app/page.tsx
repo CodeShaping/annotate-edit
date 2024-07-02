@@ -50,6 +50,14 @@ function InsideOfContext({ newShapeId, currentTask }: { newShapeId: TLShapeId, c
 		const initialCameraPosition = editor.getCamera()
 
 		const handlePanning = (event: TouchEvent) => {
+			if (event.touches.length > 1) {
+				if (event.target && (event.target as HTMLElement).className === 'cm-line') {
+					return
+				}
+				event.preventDefault();
+				return
+			}
+
 			const currentCameraPosition = editor.getCamera();
 			let newY = currentCameraPosition.y;
 
@@ -58,13 +66,6 @@ function InsideOfContext({ newShapeId, currentTask }: { newShapeId: TLShapeId, c
 				y: newY,
 				z: 1,
 			})
-
-			if (event.touches.length > 1) {
-				if (event.target && (event.target as HTMLElement).className === 'cm-line') {
-					return
-				}
-				event.preventDefault();
-			}
 		};
 		const handleResize = () => {
 			editor.updateShape<CodeEditorShape>({
@@ -88,7 +89,7 @@ function InsideOfContext({ newShapeId, currentTask }: { newShapeId: TLShapeId, c
 				prevCode: userStudyTasks[3].starterCode,
 				code: userStudyTasks[3].starterCode,
 				w: (window.innerWidth),
-				h: (window.innerHeight * 2),
+				h: (window.innerHeight),
 			},
 		})
 

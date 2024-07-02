@@ -184,6 +184,7 @@ from typing import List, Dict
 data = {
     'feature1': [1.0, 2.0, np.nan, 4.0, 5.0],
     'feature2': [2.0, np.nan, 3.0, 4.0, 5.0],
+    'feature3': [0.1, 0.3, 1.0, 3.0, 12.0],
     'label': [0, 1, 0, 1, 1]
 }
 df = pd.DataFrame(data)
@@ -255,6 +256,7 @@ from typing import List, Dict
 data = {
     'feature1': [1.0, 2.0, np.nan, 4.0, 5.0],
     'feature2': [2.0, np.nan, 3.0, 4.0, 5.0],
+    'feature3': [0.1, 0.3, 1.0, 3.0, 12.0],
     'label': [0, 1, 0, 1, 1]
 }
 df = pd.DataFrame(data)

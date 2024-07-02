@@ -30,7 +30,8 @@ export async function makeReal(editor: Editor, apiKey: string, codeShapeId: TLSh
 	// 	editor.selectAll()
 	// 	// selectedShapes = editor.getSelectedShapes()
 	// }
-	let selectedShapes = shapes
+	let selectedShapes = editor.getCurrentPageShapes() as TLShape[]
+	console.log(selectedShapes)
 
 	// console.log('selectedShapes2', selectedShapes)
 
