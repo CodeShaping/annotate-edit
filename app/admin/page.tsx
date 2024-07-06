@@ -137,15 +137,18 @@ export default function Admin() {
         }
 
         // Add CSV file to ZIP
+        // Add CSV file to ZIP
         let csvContent = "\"UserId\",\"TaskId\",\"LogType\",\"Data\",\"Timestamp\"\n";
         allLogs.forEach(log => {
+            let dataString;
             // Check if log.data is an image (simple check for URLs or base64-encoded images)
             if (typeof log.data === 'string' && (log.data.startsWith('http') || log.data.startsWith('data:image'))) {
-                // It's an image, skip this log
-                return;
+                // It's an image, use null for the image data
+                dataString = "null";
+            } else {
+                dataString = JSON.stringify(log.data).replace(/"/g, '""'); // Escape double quotes
             }
 
-            const dataString = JSON.stringify(log.data).replace(/"/g, '""'); // Escape double quotes
             const row = `"${log.userId}","${log.taskId}","${log.type}","${dataString}","${log.timestamp}"\n`;
             csvContent += row;
         });
