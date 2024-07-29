@@ -30,6 +30,12 @@
 	display: none !important;
 }
 
+.tlui-menu-zone {
+	position: absolute !important;
+	right: 50% !important;
+	bottom: 3rem !important;
+}
+
 .tlui-debug-panel {
 	display: none !important;
 }
@@ -369,4 +375,128 @@
 .logs-table .cell-content.expanded::after {
 	content: 'Less';
 	background-color: transparent;
+}
+
+
+
+/* META UI HELPER */
+#meta-ui-helper {
+	position: absolute;
+	z-index: 900;
+	margin: 0;
+	pointer-events: auto;
+	/* Changed from 'none' to 'auto' to allow interactions */
+	background: rgba(255, 255, 255, 0.95);
+	padding: 10px;
+	border-radius: 5px;
+	border: 2px solid #007bff;
+	box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+	font-family: Arial, sans-serif;
+}
+
+#meta-ui-helper .header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding-bottom: 5px;
+	/* margin-bottom: 10px; */
+}
+
+#meta-ui-helper .header button {
+	border: none;
+	background: none;
+	font-size: 1.2em;
+	cursor: pointer;
+	color: #007bff;
+}
+
+#meta-ui-helper .header button:hover {
+	color: #0056b3;
+}
+
+#meta-ui-helper .content {
+	border-top: 2px solid #007bff;
+	padding-top: 5px;
+}
+
+#meta-ui-helper .content p {
+	margin: 3px 0;
+}
+
+#meta-ui-helper .content span {
+	display: block;
+	margin: 3px 0;
+}
+
+#meta-ui-helper .content input {
+	border: 1px solid #ccc;
+	border-radius: 4px;
+	padding: 2px 3px;
+}
+
+#meta-ui-helper .content button {
+	border: none;
+	background: none;
+	font-size: 1em;
+	cursor: pointer;
+	color: #007bff;
+	margin-left: 5px;
+}
+
+#meta-ui-helper .content button:hover {
+	color: #0056b3;
+}
+
+
+/* RECOG HISTORIES */
+.recognition-histories {
+	width: 300px;
+	background: rgba(255, 255, 255, 0.9);
+	border: 2px solid #007bff;
+	border-radius: 5px;
+	box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+	padding: 15px;
+	font-family: Arial, sans-serif;
+	margin: 10px;
+	overflow: auto;
+}
+
+.recognition-histories h2 {
+	font-size: 1.2em;
+	color: #007bff;
+	margin-bottom: 10px;
+	border-bottom: 2px solid #007bff;
+	padding-bottom: 5px;
+}
+
+.recognition-histories table {
+	width: 100%;
+	border-collapse: collapse;
+}
+
+.recognition-histories th,
+.recognition-histories td {
+	text-align: left;
+	padding: 8px;
+	border-bottom: 1px solid #ddd;
+}
+
+.recognition-histories th {
+	background-color: #f2f2f2;
+}
+
+.recognition-histories tr:hover {
+	background-color: #f1f1f1;
+}
+
+.recognition-histories button {
+	border: none;
+	background: none;
+	color: #007bff;
+	cursor: pointer;
+	font-size: 0.9em;
+}
+
+.recognition-histories button:hover {
+	color: #0056b3;
 }

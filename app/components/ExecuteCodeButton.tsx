@@ -1,6 +1,9 @@
 import { useEditor, useToasts, type TLShapeId } from '@tldraw/tldraw'
 import { useCallback, useState } from 'react'
 import { executeCode } from '../lib/executeCode'
+import { VscRunAll } from "react-icons/vsc";
+import { FaRunning } from "react-icons/fa";
+
 
 export function ExecuteCodeButton({ codeShapeId, onStoreLog }: { codeShapeId: TLShapeId, onStoreLog: (log: any) => void }) {
 	const editor = useEditor()
@@ -39,7 +42,8 @@ export function ExecuteCodeButton({ codeShapeId, onStoreLog }: { codeShapeId: TL
 
 	return (
 		<button className="executeCodeButton" onClick={handleClick}>
-			{isExecuting ? 'Running...' : '▶️ Run'}
+			{isExecuting ? (<FaRunning />) : (<VscRunAll />)}
+			{isExecuting ? ' Running...' : ' Run Code'}
 		</button>
 	)
 }

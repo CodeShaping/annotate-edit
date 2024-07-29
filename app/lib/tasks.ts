@@ -175,7 +175,7 @@ print(f"Nearest neighbors to {query_point} using Manhattan distance: {nearest_ne
     {
         id: '3-1',
         title: 'Task 3-1',
-        description: 'Impute Missing Data with Average Feature Value & Feature Engineering for Quadratic Terms',
+        description: 'Impute Missing Data & Feature Engineering for Quadratic Terms',
         starterCode: `import numpy as np
 import pandas as pd
 from typing import List, Dict

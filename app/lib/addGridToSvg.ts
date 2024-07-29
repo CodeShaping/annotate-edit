@@ -20,7 +20,7 @@ export function addGridToSvg(
 	grid.setAttribute('stroke-width', '1')
 
 	if (labels) {
-		grid.setAttribute('font', '10px/10px normal Serif')
+		grid.setAttribute('font', '18px sans-serif')
 		grid.setAttribute('fill', color)
 		grid.setAttribute('text-anchor', 'middle')
 	}

@@ -30,14 +30,30 @@ export const OPENAI_USER_PROMPT_WITH_PREVIOUS_DESIGN =
 
 
 export const OPENAI_MAKE_CODE_PROMPT = `You are an expert python & javascript developer.
-Generate of modify the code based on the handwritten annotations drawn on the canvas.
+Generate or modify the code based on the handwritten annotations drawn on the canvas.
 These annotations might include handwritten text, arrows, crosses, and other symbols that indicate the changes to be made to the code.
 Please interpret each annotation and make the necessary changes to the code accordingly. (use matplotlib for plotting not seaborn)
 Please generate the entire code based on the changes made to the current code.
 `
-
-
 export const OPENAI_USER_MAKE_CODE_PROMPT = 'The user have just requested a code modification based on the annotations drawn on the canvas. Respond with the COMPLETE code as a single file beginning with ```python or ```javascript and ending with ```'
+
+export const OPENAI_EDIT_PARTIAL_CODE_PROMPT = `You are an expert python & javascript developer.
+Generate or modify the partial code based on the handwritten annotations user drawn on the canvas.
+These annotations might include handwritten text, arrows, crosses, and other symbols that indicate the changes to be made to the code.
+Please interpret each annotation and only make the partial code edits as requested by the user.
+Please return in following format:
+{
+	original_code: "def minmax_scaling(data):\n    return (data - np.min(data)) / (np.max(data) - np.min(data))",
+	code_edit: "def minmax_scaling(feature1):\n    return (feature1 - np.min(feature1)) / (np.max(feature1) - np.min(feature1))",
+}
+if no edits are required, return empty string for both original_code and code_edit.
+Do not regenerate the entire code, only return the partial code edits as requested by the user.
+`
+
+
+export const OPENAI_USER_EDIT_PARTIAL_CODE_PROMPT = 'The user have just requested a partial code modification based on the annotations drawn on the canvas. Respond with the JSON format as shown in the example structure above.'
+
+
 
 
 export const OPENAI_MAKE_CODE_CELL_PROMPT = `You are an expert data scientist helping users generating or editing code on jupyter notebook.
@@ -48,3 +64,181 @@ For example: if the previous cell contains a variable declaration, and the annot
 `
 
 export const OPENAI_USER_MAKE_CODE_CELL_PROMPT = 'The user have just requested the subsequent code based on the annotations drawn on the canvas. respond you code within ```python or ```javascript and ending with ```'
+
+
+export const OPENAI_INTERPRETATION_SKETCH_PROMPT = `
+The provided image contains handwritten annotations drawn on top of the code editor by users, specifying the changes to be made to the code.
+Decompose users' annotations into smaller parts and Group them based on their semantic meaning (arrow+text, paranthese+arrow, circles, cross, etc.).
+
+Please provide results in JSON format with the following example structure:
+[
+	{shape: "circle+arrow+text", location: [20, 40, 60, 120], annotated_text: "move", intended_edit: "moving varaible declaration to line 5"},
+	{shape: "arrow_dwon+text", location: [18, 19, 32, 24], annotated_text: "minmax scaling", intended_edit: "insert a feature scaling function"},
+	{shape: "visualization", location: [18, 19, 32, 24], annotated_text: "", intended_edit: "implement a scatter plot"},
+	...
+],
+
+location: Return the coordinates (ticked in red alongside the image) of the shape in the provided image in the format [x0, y0, x1, y1], class bounding box coordinates.
+most annotations will come with text that encapuslates the purpose of the annotation, group them together.
+intended_edit (str): the actual code edit user intend to do with drew sketches.
+all the skecthes should be interpreted and included in the JSON response.
+`
+
+export const OPENAI_USER_INTERPRETATION_SKETCH_PROMPT = 'The user have just requested the interpretation of the sketched annotations for code edits. Respond with the JSON format as shown in the example structure above.'
+
+
+export const OPENAI_INTERPRETATION_SKETCH_PROMPT_V1 = `
+You are an expert Pythong programmer and you are helping a user to edit current code based on the handwritten annotations drawn on top.
+Please first reason and decompose users' annotations into smaller parts (arrow+text, paranthese+arrow, circles, cross, etc.) and interpret them into "COMMAND" (actual code edits user intend to do with drew sketches), "PARAM" (the circled or underlined code that should be considered as a parameter or variable for the command), and "TARGET" (the target area or code the edited code should be applied).
+
+Please provide results in JSON format with the following example structure:
+{
+  "SKETCH": [
+	{type: 'PARAM', shape: "circle+arrow", location: (20, 40, 60, 120), code?: [line_number, line_number], annotated_text?: "data"},
+	{type: 'COMMAND', shape: "arrow_dwon", location: (18, 19, 32, 24), code?: [], annotated_text?: "minmax scaling"},
+	...
+  ],
+  "TARGET": [line_number, line_number]
+  "INTERPRETATION": "create a new function for minmax scaling to [TARGET] using data, [PARAM]",
+  "CODE_EDIT": "def minmax_scaling(data):\n    return (data - np.min(data)) / (np.max(data) - np.min(data))\n"
+}
+the COMMAND can be either be code, comment, annotation, or drawing (e.g., arrow + visualization)
+
+location: Return the coordinates (ticked in red alongside the image) of the shape in the provided image in the format x0, y0, x1, y1, class bounding box coordinates.
+line_number refer to the line number in the code editor [start, end].
+
+the CODE_EDIT should be the fully functional code to be inserted or replaced in the target area.
+all the skecthes should be interpreted and included in the JSON response.
+`
+
+export const OPENAI_USER_INTERPRETATION_SKETCH_PROMPT_V1 = 'The user have just requested the code modification based on the sketches drawn on the canvas. Respond with the JSON format as shown in the example structure above.'
+
+
+export const OPENAI_AUTOCOMPLETE_SKECTH_PROMPT = `You are tasked to autocomplete users' handwritten prompt drawn on the code editor.
+Please interpret the sketches annotations on the code editor and provide the completion for the user's current handwritten prompt without repeating the words.
+
+for example, if you recognized a handwritten prompt "insert def" with a circle+arrow pointing to the code area line 5 to 10, you should return the auto-completion like, ", minmax_scaling(data) to line 5-10". 
+and return results in following JSON format:
+{
+  "recognized_text": "insert def",
+  "whole_sentence": ", minmax_scaling(data) to line 5-10",
+  "auto_complete": [
+	{ 
+  		text: ", minmax_scaling(data)",
+		corresponding_sketch: {}
+	},
+	{
+		text: "to line 5-10",
+		corresponding_sketch: {
+			sketch: "circle+arrow",
+			location: [A2, B2, C2]
+		}
+	},
+  ],
+  "code_prompt_matches": [
+	{
+  		word_in_prompt: "data", 
+		matched_code: "data = {'x': 1, 'y': 2}", 
+		location: [line_number, line_number]
+	},
+  ]
+}
+
+Another example: 
+if you recognized a handwritten prompt "modify the function" with an arrow pointing to the def plot, and a circle+arrow referring to the data attribute, you should return the auto-completion like, "def plot, to take in data attribute".
+
+returned result
+{
+  "recognized_text": "modify the function",
+  "whole_sentence": ", def plot, to take in data attribute",
+  "auto_complete": [
+	{
+  		text: ", def plot", 
+		corresponding_sketch: {
+			sketch: "circle+arrow",
+			location: [A2, B2, C2]
+		}
+	},
+	{
+		text: ", to take in data attribute", 
+		corresponding_sketch: {
+			sketch: "underline+arrow",
+			location: [D2, E2, F2]
+		}
+	},
+  ],
+  "code_prompt_matches": [
+	{word_in_prompt: "function, def plot", matched_code: "def plot(data):", location: [line_number, line_number]},
+	{word_in_prompt: "data attribute", matched_code: "data = {'a': [1, 2, 3]}", location: [line_number, line_number]},
+  ]
+}
+
+DO NOT auto-completing the code, but the handwritten natrual language propmt!
+`
+
+export const OPENAI_USER_AUTOCOMPLETE_SKECTH_PROMPT = 'The user have just requested a autocompletion on the handwritten prompt. Respond with above JSON format.'
+
+export const OPENAI_AUTOCOMPLETE_SKECTH_PROMPT1 = `You are tasked to autocomplete users' handwritten prompt drawn on the code editor.
+Please interpret the sketches annotations on the code editor and provide the completion for the user's current handwritten prompt without repeating the words.
+
+for example, if you recognized a handwritten prompt "insert def" with a circle+arrow pointing to the code area line 5 to 10, you should return the auto-completion like, "to line 5-10".
+Another example: if you recognized a handwritten prompt "modify the function" with an arrow pointing to the def plot, and a circle+arrow referring to the data attribute, you should return the auto-completion like, "def plot, to take in data attribute".
+
+DO NOT auto-completing the code, but the handwritten natrual language propmt!
+`
+// export const OPENAI_USER_AUTOCOMPLETE_SKECTH_PROMPT1 = 'The user have just requested a autocompletion on the handwritten prompt. Respond with {"recognized_text: "" (the user handwritten prompt), "auto_completion": "" (a concise string that should be inserted following the current users handwritten prompt.)}'
+
+export const OPENAI_CODE_SHAPE_PROMPT = `There is a type of code that combines typed code with holes, which are filled in with users' sketched annotations.
+
+You need to first interpret users' skecthed annotations (in the image) and generate the partial code that includes holes to fit in the sketches.
+
+For example, if you recognize a handwritten prompt "Min max scaling" with a circle+arrow referring to the data's attribute, you should only generate a segment of code about the function to implement feature scaling but with holes to fill in the annotations.
+Example Results 1:
+Decomposed sketched Annotation with assigned [Hole{N}]:
+1. Min max scaling - type: "text"; content: "Min max scaling"; [HOLE1]
+2. ( - type: "symbol"; content: "("; [HOLE2]
+3. data's attribute - type: "circle+arrow"; content: "feature1"; [HOLE3]
+4. ) - type: "symbol"; content: ")"; [HOLE4]
+
+Generated Code Segment with labels, [HOLE1], [HOLE2], [HOLE3], [HOLE4]:
+\`\`\`python
+def [HOLE1] [HOLE2]data[HOLE4]:
+	feature1 = data['[HOLE3]']
+	return (feature1 - np.min(feature1)) / (np.max(feature1) - np.min(feature1))
+\`\`\`
+
+Explanation:
+[HOLE1]: "Min max scaling"
+[HOLE2]: "("
+[HOLE3]: Reference to the data attribute, 'feature1'
+[HOLE4]: ")"
+
+---
+
+Example input image 2:
+The image contains a sketched annotation "def", "dist plot", "sns" & circle + arrow, "<" with holes to fill in the annotations.
+
+Example Results 2:
+Decomposed sketched Annotation and assigned Holes:
+1. def - type: "text"; content: "def"; [HOLE1]
+2. dist plot - type: "text"; content: "dist plot"; [HOLE2]
+3. sns - type: "text"; content: "sns"; [HOLE3]
+4. circle + arrow - type: "annotation"; content: "reference to data"; [HOLE4]
+5. < - type: "symbol"; content: "<"; [HOLE5]
+
+Generated Code Segment with [HOLE1], [HOLE2], [HOLE3], [HOLE4]:
+\`\`\`python
+class DataProcessor:
+def [HOLE1] HOLE2:
+[HOLE3].distplot(self.dataframe['[HOLE4]'])
+\`\`\`
+
+Explanation:
+[HOLE1]: "def"
+[HOLE2]: "dist plot"
+[HOLE3]: "sns"
+[HOLE4]: Reference to the data attribute indicated by the circle and arrow
+[HOLE5]: Symbol "<" is not directly used in this context, but the reference is indicated within the data attribute placeholder.
+`
+
+export const OPENAI_USER_CODE_SHAPE_PROMPT = "The user have just requested a code with holes for the sketched annotations in orange color. For the given image, interpret these annotations and only generate the corresponding partial code segment that users's annotations about."

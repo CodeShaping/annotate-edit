@@ -11,13 +11,13 @@ import {
 import { RecordProps, T } from 'tldraw'
 // import CodeMirrorMerge, { CodeMirrorMergeProps } from 'react-codemirror-merge';
 
-import CodeMirror, { EditorView, EditorState, type ReactCodeMirrorRef } from '@uiw/react-codemirror';
+import CodeMirror, { EditorView, EditorState, type ReactCodeMirrorRef} from '@uiw/react-codemirror';
 import { python } from '@codemirror/lang-python';
 import { javascript } from '@codemirror/lang-javascript';
 import { useEffect, useRef } from 'react';
 import html2canvas from 'html2canvas';
 // import * as JsDiff from "diff";
-// import { unifiedMergeView, updateOriginalDoc } from '@codemirror/merge';
+import { unifiedMergeView, updateOriginalDoc } from '@codemirror/merge';
 // import { createTheme } from '@uiw/codemirror-themes';
 // const Original = CodeMirrorMerge.Original;
 // const Modified = CodeMirrorMerge.Modified;
@@ -67,11 +67,17 @@ export class CodeEditorShapeUtil extends BaseBoxShapeUtil<CodeEditorShape> {
 
     override component(shape: CodeEditorShape) {
         const isEditing = useIsEditing(shape.id)
+        const startPosition = useRef<number | null>(null)
 
         const codeMirrorRef = useRef<ReactCodeMirrorRef | null>(null)
         const extensions = [
             python(),
             javascript(),
+            unifiedMergeView({
+                original: shape.props.prevCode,
+                syntaxHighlightDeletions: false,
+                mergeControls: true
+            }),
         ]
 
         const boxShadow = useValue(
@@ -96,11 +102,15 @@ export class CodeEditorShapeUtil extends BaseBoxShapeUtil<CodeEditorShape> {
             })
             if (isEditing) {
                 codeMirrorRef.current?.view?.focus();
+                // set to the current edit position
+                // const cursor = codeMirrorRef.current?.view?.state.selection.main.head
+                // if (cursor) {
+                //     codeMirrorRef.current?.view?.dispatch({ selection: { anchor: cursor, head: cursor } })
+                // }
             }
         }, [isEditing])
 
         useEffect(() => {
-            // update the height
             const view = codeMirrorRef.current?.view
             // console.log('shape.props.code', shape.props.code, view?.contentHeight)
             this.editor.updateShape<CodeEditorShape>({
@@ -155,8 +165,44 @@ export class CodeEditorShapeUtil extends BaseBoxShapeUtil<CodeEditorShape> {
 
         const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 
+        const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
+            // set cursor to the location of the touch
+            const touch = e.touches[0];
+            const editorView = codeMirrorRef.current?.view;
+            if (editorView) {
+                const pos = editorView.posAtCoords({ x: touch.clientX, y: touch.clientY });
+                if (pos) {
+                    editorView.dispatch({ selection: { anchor: pos, head: pos } });
+                }
+                startPosition.current = editorView.posAtCoords({ x: touch.clientX, y: touch.clientY }) || 0;
+            }
+            e.stopPropagation();
+            return;
+        }
+
+        const handleTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
+            // select code while moving
+            const touch = e.touches[0];
+            const editorView = codeMirrorRef.current?.view;
+            if (editorView) {
+                const pos = editorView.posAtCoords({ x: touch.clientX, y: touch.clientY });
+                if (pos && startPosition.current) {
+                    editorView.dispatch({ selection: { anchor: startPosition.current, head: pos } });
+                }
+            }
+            return;
+        }
+
+        const handleTouchEnd = (e: React.TouchEvent<HTMLDivElement>) => {
+            startPosition.current = null;
+            e.stopPropagation();
+        };
+
         return (
             <div
+                onTouchStart={handleTouchStart}
+                onTouchMove={handleTouchMove}
+                onTouchEnd={handleTouchEnd}
                 style={{
                     touchAction: isTouchDevice ? 'auto' : 'none',
                     pointerEvents: isEditing ? 'auto' : 'none',
@@ -166,7 +212,7 @@ export class CodeEditorShapeUtil extends BaseBoxShapeUtil<CodeEditorShape> {
                     // display: 'flex',
                     // flexDirection: 'column',
                     position: 'relative',
-                    minHeight: `${shape.props.h}px`,
+                    minHeight: `${shape.props.h}px`
                 }}
             >
                 <div
@@ -179,14 +225,14 @@ export class CodeEditorShapeUtil extends BaseBoxShapeUtil<CodeEditorShape> {
                         // onPointerDown={(e) => e.stopPropagation()}
                         style={{
                             fontSize: '18px',
-                            pointerEvents: isEditing ? 'auto' : 'none',
-                            touchAction: isEditing || isTouchDevice ? 'auto' : 'none',
+                            // pointerEvents: isEditing ? 'auto' : 'none',
+                            // touchAction: isEditing || isTouchDevice ? 'auto' : 'none',
                             // boxShadow,
                             border: '1px solid var(--color-panel-contrast)',
                             borderRadius: 'var(--radius-2)',
                             backgroundColor: 'var(--color-background)',
                             width: `${shape.props.w}px`,
-                            height: `${shape.props.h+10}px`
+                            height: `${shape.props.h + 10}px`
                         }}
                         // onTouchStart={(e) => { e.preventDefault(); return; }}
                         extensions={[...extensions]}
@@ -225,8 +271,8 @@ export class CodeEditorShapeUtil extends BaseBoxShapeUtil<CodeEditorShape> {
                         onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); return; }}
                         onClick={(e) => { e.preventDefault(); e.stopPropagation(); return; }}
                         onTouchStart={(e) => { e.preventDefault(); e.stopPropagation(); return; }}
-                        // onPointerDown={(e) => { handleShowResult(); e.stopPropagation(); }}
-                        // onTouchStart={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                    // onPointerDown={(e) => { handleShowResult(); e.stopPropagation(); }}
+                    // onTouchStart={(e) => { e.preventDefault(); e.stopPropagation(); }}
                     >
                         <div dangerouslySetInnerHTML={{ __html: shape.props.res }}></div>
                     </div>
@@ -242,10 +288,21 @@ export class CodeEditorShapeUtil extends BaseBoxShapeUtil<CodeEditorShape> {
             return data;
         });
 
+        // Create an SVG filter for grayscale
+        const filter = document.createElementNS('http://www.w3.org/2000/svg', 'filter');
+        filter.setAttribute('id', 'grayscale-filter');
+
+        const feColorMatrix = document.createElementNS('http://www.w3.org/2000/svg', 'feColorMatrix');
+        feColorMatrix.setAttribute('type', 'matrix');
+        feColorMatrix.setAttribute('values', '0.33 0.33 0.33 0 0 0.33 0.33 0.33 0 0 0.33 0.33 0.33 0 0 0 0 0 1 0');
+        filter.appendChild(feColorMatrix);
+        g.appendChild(filter);
+
         const image = document.createElementNS('http://www.w3.org/2000/svg', 'image')
         image.setAttributeNS('http://www.w3.org/1999/xlink', 'href', screenShot)
         image.setAttribute('width', (shape.props.w).toString())
         image.setAttribute('height', (shape.props.h).toString())
+        image.setAttribute('filter', 'url(#grayscale-filter)')
         g.appendChild(image)
 
         return g

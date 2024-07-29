@@ -1,10 +1,10 @@
 import { useEditor, useToasts } from '@tldraw/tldraw'
 import { useCallback, useState } from 'react'
-import { makeReal } from '../lib/makeReal'
+import { generateCode } from '../lib/generateCode'
 // import { CodeEditorShape } from '../CodeEditorShape/CodeEditorShape'
 import { TLShapeId } from '@tldraw/tldraw'
 
-export function MakeRealButton({ codeShapeId, onStoreLog }: { codeShapeId: TLShapeId, onStoreLog: (log: any) => void }) {
+export function GenerateCodeButton({ codeShapeId, onStoreLog }: { codeShapeId: TLShapeId, onStoreLog: (log: any) => void }) {
 	const editor = useEditor()
 	const { addToast } = useToasts()
 	const [isGenerating, setIsGenerating] = useState(false)
@@ -17,9 +17,13 @@ export function MakeRealButton({ codeShapeId, onStoreLog }: { codeShapeId: TLSha
 			if (!apiKey) throw Error('Make sure the input includes your API Key!')
 
 			const onStart = () => setIsGenerating(true);
-			const onFinish = () => setIsGenerating(false);
+			const onFinish = (original_code: string, code_edit: string) => {
+				// console.log('Original Code:', original_code)
+				// console.log('Code Edit:', code_edit)
+				setIsGenerating(false)
+			}
 			
-			await makeReal(editor, apiKey, codeShapeId, onStart, onFinish, onStoreLog)
+			await generateCode(editor, apiKey, codeShapeId, onStart, onFinish, onStoreLog)
 		} catch (e) {
 			console.error(e)
 			addToast({
