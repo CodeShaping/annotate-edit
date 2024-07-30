@@ -74,7 +74,7 @@ export class CodeEditorShapeUtil extends BaseBoxShapeUtil<CodeEditorShape> {
             python(),
             javascript(),
             unifiedMergeView({
-                original: shape.props.prevCode,
+                original: shape.props.code,
                 syntaxHighlightDeletions: false,
                 mergeControls: true
             }),
@@ -92,21 +92,35 @@ export class CodeEditorShapeUtil extends BaseBoxShapeUtil<CodeEditorShape> {
         useEffect(() => {
             const view = codeMirrorRef.current?.view
             // console.log('editor', view?.contentHeight, view?.defaultLineHeight, state?.doc.lines)
-            this.editor.updateShape<CodeEditorShape>({
-                id: shape.id,
-                type: 'code-editor-shape',
-                props: {
-                    ...shape.props,
-                    h: Math.max(window.innerHeight, (view?.contentHeight || shape.props.h))
-                }
-            })
+            
             if (isEditing) {
                 codeMirrorRef.current?.view?.focus();
-                // set to the current edit position
-                // const cursor = codeMirrorRef.current?.view?.state.selection.main.head
-                // if (cursor) {
-                //     codeMirrorRef.current?.view?.dispatch({ selection: { anchor: cursor, head: cursor } })
-                // }
+                // setCameraPosition({ x: 0, y: 0 })
+                this.editor.setCamera({x: 0, y: 0})
+                this.editor.updateShape<CodeEditorShape>({
+                    id: shape.id,
+                    type: 'code-editor-shape',
+                    props: {
+                        ...shape.props,
+                        h: window.innerHeight
+                    }
+                })
+            } else {
+                this.editor.updateShape<CodeEditorShape>({
+                    id: shape.id,
+                    type: 'code-editor-shape',
+                    isLocked: false,
+                    props: {
+                        ...shape.props,
+                        h: (view?.contentHeight || shape.props.h) + 10
+                    }
+                })
+
+                this.editor.updateShape<CodeEditorShape>({
+                    id: shape.id,
+                    type: 'code-editor-shape',
+                    isLocked: true,
+                })
             }
         }, [isEditing])
 
@@ -181,7 +195,6 @@ export class CodeEditorShapeUtil extends BaseBoxShapeUtil<CodeEditorShape> {
         }
 
         const handleTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
-            // select code while moving
             const touch = e.touches[0];
             const editorView = codeMirrorRef.current?.view;
             if (editorView) {

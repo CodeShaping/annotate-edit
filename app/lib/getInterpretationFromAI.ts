@@ -100,7 +100,7 @@ export async function getInterpretationFromAI({
             body: JSON.stringify(body),
         })
         json = await resp.json()
-        console.log(json)
+        // console.log(json)
     } catch (e: any) {
         throw Error(`Could not contact OpenAI: ${e.message}`)
     }

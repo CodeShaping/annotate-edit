@@ -20,11 +20,11 @@ export function ExecuteCodeButton({ codeShapeId, onStoreLog }: { codeShapeId: TL
 			
 			if (res) {
 				setIsExecuting(false);
-				addToast({
-					icon: 'check',
-					title: 'Code executed successfully',
-					description: res,
-				})
+				// addToast({
+				// 	icon: 'check',
+				// 	title: 'Code executed successfully',
+				// 	description: res,
+				// })
 				onStoreLog({ type: 'compiled-result', data: res });
 			}
 		} catch (e) {

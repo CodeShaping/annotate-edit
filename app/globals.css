@@ -33,7 +33,7 @@
 .tlui-menu-zone {
 	position: absolute !important;
 	right: 50% !important;
-	bottom: 3rem !important;
+	bottom: 3.5rem !important;
 }
 
 .tlui-debug-panel {
@@ -108,10 +108,14 @@
 }
 
 .makeRealButton {
-	background: rgb(254 165 24);
-	color: white;
-	border: none;
-	font: inherit;
+	position: fixed;
+	bottom: 1rem;
+	z-index: 999;
+	right: 17%;
+	box-shadow: var(--shadow-2);
+	/* background: rgb(254 165 24); */
+	background-color: var(--color-panel);
+	border: 1px solid rgb(254, 165, 24);
 	font-weight: 800;
 	padding: var(--space-3) var(--space-4);
 	border-radius: var(--radius-2);
@@ -125,8 +129,14 @@
 }
 
 .lockCodeEditorButton {
-	background: rgb(77, 171, 247);
-	color: white;
+	position: fixed;
+	bottom: 1rem;
+	z-index: 999;
+	right: 26%;
+	box-shadow: var(--shadow-2);
+	/* background: rgb(77, 171, 247); */
+	background-color: var(--color-panel);
+	/* color: white; */
 	border: none;
 	font: inherit;
 	font-weight: 600;
@@ -499,4 +509,39 @@
 
 .recognition-histories button:hover {
 	color: #0056b3;
+}
+
+
+.tlui-buttons__grid {
+	grid-template-columns: repeat(8, auto) !important;
+}
+
+.controlBrushes {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	justify-content: center;
+}
+
+.controlBrushes .controlBrushButton {
+	z-index: 100;
+	box-shadow: var(--shadow-1);
+	background: var(--color-panel);
+	/* inner border */
+	border: 1px solid white;
+	font: inherit;
+	font-weight: 600;
+	padding: var(--space-3) var(--space-4);
+	border-radius: var(--radius-2);
+	cursor: pointer;
+	pointer-events: all;
+	margin: 0 var(--space-1);
+}
+
+.controlBrushes .controlBrushButton:hover {
+	opacity: 0.95;
+}
+
+.controlBrushes .controlBrushButton.active {
+	border-width: 2px;
 }

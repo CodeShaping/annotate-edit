@@ -81,10 +81,10 @@ Please provide results in JSON format with the following example structure:
 location: Return the coordinates (ticked in red alongside the image) of the shape in the provided image in the format [x0, y0, x1, y1], class bounding box coordinates.
 most annotations will come with text that encapuslates the purpose of the annotation, group them together.
 intended_edit (str): the actual code edit user intend to do with drew sketches.
-all the skecthes should be interpreted and included in the JSON response.
+All the skecthes should be interpreted and included in the JSON response.
 `
 
-export const OPENAI_USER_INTERPRETATION_SKETCH_PROMPT = 'The user have just requested the interpretation of the sketched annotations for code edits. Respond with the JSON format as shown in the example structure above.'
+export const OPENAI_USER_INTERPRETATION_SKETCH_PROMPT = 'The user have just requested the interpretation of the sketched annotations for code edits. Please note that some types of annotations have specific colors assigned to them: blue: reference; orange: delete; green: insert/add; violet: replace. If these four colors are used, please interpret the annotations according to the specified meanings. Respond with the JSON format as shown in the example structure above.'
 
 
 export const OPENAI_INTERPRETATION_SKETCH_PROMPT_V1 = `

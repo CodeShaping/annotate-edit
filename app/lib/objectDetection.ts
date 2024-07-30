@@ -43,6 +43,7 @@ export default function groupShapes(sketches: Sketch[], selectedShapes: TLShape[
         ...sketch,
         matched_selected_shapes: [],
     }));
+    if (selectedShapes.length === 0) return shapeGroups;
 
     const overlaps: { [key: string]: { [key: string]: number } } = {};
     const distances: { [key: string]: { [key: string]: number } } = {};
@@ -64,6 +65,8 @@ export default function groupShapes(sketches: Sketch[], selectedShapes: TLShape[
         });
     });
 
+    if (!Object.keys(overlaps).length) return shapeGroups;
+
     // Allocate shapes to the sketch with the highest overlap or nearest distance among all shapes
     // every selectedShape can only allocate to one shapeGroup
     selectedShapes.forEach((shape: TLShape) => {
@@ -71,7 +74,7 @@ export default function groupShapes(sketches: Sketch[], selectedShapes: TLShape[
             return overlaps[sketchIndex][shape.id] > overlaps[maxIndex][shape.id] ? sketchIndex : maxIndex;
         }) as string;
 
-        const minDistanceSketchIndexStr = Object.keys(distances).reduce((minIndex, sketchIndex) => {
+        const minDistanceSketchIndexStr = Object.keys(distances)?.reduce((minIndex, sketchIndex) => {
             return distances[sketchIndex][shape.id] < distances[minIndex][shape.id] ? sketchIndex : minIndex;
         }) as string;
 

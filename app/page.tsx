@@ -9,7 +9,7 @@ import { CodeEditorShapeUtil } from './CodeEditorShape/CodeEditorShape'
 // import { CustomGroupShapeUtil } from './GroupShape/GroupShape'
 
 import { useState, useEffect, useRef, useCallback, use } from 'react'
-import { useEditor, Editor, TLShape, TLShapeId, createShapeId, track, TLEventInfo } from '@tldraw/tldraw'
+import { useEditor, Editor, TLShape, TLShapeId, createShapeId, track, TLEventInfo, TLUiOverrides } from '@tldraw/tldraw'
 // import { useEditor } from 'tldraw'
 import { CodeEditorShape } from './CodeEditorShape/CodeEditorShape'
 import { userStudyTasks, type Task } from './lib/tasks'
@@ -27,6 +27,8 @@ import { FaUnderline } from "react-icons/fa";
 import { BiHighlight } from "react-icons/bi";
 
 
+import { LockCodeEditorButton } from "./components/LockCodeEditorButton";
+import { type ControlBrusheType, availableBrushes } from './components/ControlBrushes';
 
 const Tldraw = dynamic(async () => (await import('@tldraw/tldraw')).Tldraw, {
 	ssr: false,
@@ -202,13 +204,15 @@ export const MetaUiHelper = track(function MetaUiHelper({ onStoreLog, codeShapeI
 	const [isExpanded, setIsExpanded] = useState(false);
 	if (!onlySelectedShape || !onlyHoveredShape) return null;
 
-	const handleUngroupShapes = () => {
-		console.log('ungroup shape', onlySelectedShape.id);
-		editor.ungroupShapes([onlySelectedShape.id || onlyHoveredShape.id]);
-	};
+	// const handleUngroupShapes = () => {
+	// 	// console.log('ungroup shape', onlySelectedShape.id);
+	// 	// editor.ungroupShapes([onlySelectedShape.id || onlyHoveredShape.id]);
+	// 	// remove meta
+	// 	editor.updateShape({ ...onlySelectedShape, meta: {} });
+	// };
 
 	const handleRemoveShapes = () => {
-		console.log('remove shape', onlySelectedShape.id);
+		onStoreLog({ type: 'remove-shape', data: { shapeId: onlySelectedShape.id || onlyHoveredShape.id } });
 		editor.deleteShapes([onlySelectedShape.id || onlyHoveredShape.id]);
 	};
 
@@ -229,6 +233,7 @@ export const MetaUiHelper = track(function MetaUiHelper({ onStoreLog, codeShapeI
 		if (onlyHoveredShape) {
 			editor.updateShape({ ...onlyHoveredShape, meta: { ...onlyHoveredShape.meta, intended_edit: editText } });
 		}
+		onStoreLog({ type: 'edit-interpretation', data: { shapeId: onlySelectedShape.id, intended_edit: editText } });
 		setIsEditing(false);
 	};
 
@@ -239,9 +244,9 @@ export const MetaUiHelper = track(function MetaUiHelper({ onStoreLog, codeShapeI
 		const onFinish = (original_code: string, code_edit: string) => {
 			setIsGenerating(false);
 			toggleExpand(groupId);
-			console.log('onFinish', original_code, code_edit);
 			// update onlySelectedShape with the new meta
 			editor.updateShape({ ...onlySelectedShape, meta: { ...onlySelectedShape.meta, original_code, code_edit } });
+			onStoreLog({ type: 'commit-change', data: { shapeId: groupId, original_code, code_edit } });
 		}
 		setIsGenerating(true);
 		await generateCode(editor, apiKey, codeShapeId as TLShapeId, onStart, onFinish, onStoreLog, groupId);
@@ -252,7 +257,7 @@ export const MetaUiHelper = track(function MetaUiHelper({ onStoreLog, codeShapeI
 		const shapes = shape.split('+');
 		const icons: { [key: string]: JSX.Element } = {
 			circle: <FiCircle />,
-			eclipse: <FiCircle />,
+			ellipse: <FiCircle />,
 			curve: <PiWaveSineBold />,
 			curly_brackets: <PiBracketsCurlyBold />,
 			curly_line: <BiHighlight />,
@@ -264,6 +269,7 @@ export const MetaUiHelper = track(function MetaUiHelper({ onStoreLog, codeShapeI
 			line: <FiMinus />,
 			underline: <FaUnderline />,
 			cross: <FiX />,
+			cross_out: <FiX />,
 			arrow_up: <FiArrowUp />,
 			arrow_down: <FiArrowDown />,
 			arrow_left: <FiArrowLeft />,
@@ -285,7 +291,6 @@ export const MetaUiHelper = track(function MetaUiHelper({ onStoreLog, codeShapeI
 	};
 
 	const toggleExpand = (shapeId: string) => {
-		console.log('toggleExpand', shapeId);
 		editor.setSelectedShapes([shapeId as TLShapeId]);
 		if (onlySelectedShape.id === shapeId) {
 			setIsExpanded(!isExpanded);
@@ -316,7 +321,7 @@ export const MetaUiHelper = track(function MetaUiHelper({ onStoreLog, codeShapeI
 									))}
 								</span>
 								<div>
-									<button onClick={handleUngroupShapes}><PiRectangleDashed /></button>
+									{/* <button onClick={handleUngroupShapes}><PiRectangleDashed /></button> */}
 									<button onClick={handleRemoveShapes}><FiDelete /></button>
 									<button onClick={() => handleRegenerateCode(shape.id)}><FaCodePullRequest /></button>
 								</div>
@@ -346,7 +351,7 @@ export const MetaUiHelper = track(function MetaUiHelper({ onStoreLog, codeShapeI
 })
 
 export type LogType = 'edit' | 'exit-edit' | 'compile' | 'compiled-result' | 'compiled-error'
-	| 'generate-param' | 'generate-code' | 'generate-error' | 'switch-task'
+	| 'generate-param' | 'generate-code' | 'generate-error' | 'switch-task' | 'interpret-shape' | 'brush' | 'commit-change' | 'remove-shape' | 'edit-interpretation'
 export interface LogEvent {
 	type: LogType
 	userId: string
@@ -419,6 +424,8 @@ export default function App() {
 
 	const [recogHistory, setRecogHistory] = useState<Map<string, any>>(new Map());
 
+	const editorRef = useRef<Editor | null>(null);
+
 	const handleEvent = useCallback(async (data: TLEventInfo, editor: Editor) => {
 		const newEvents = events.slice(0, 100)
 		if (
@@ -432,7 +439,17 @@ export default function App() {
 			newEvents.unshift(data)
 		}
 		setEvents(newEvents)
-		// console.log('events', events, data);
+		// console.log('events', data)
+		if (data.type === 'wheel') {
+			// only allow vertical scrolling
+			if (Math.abs(data.delta.x) !== 0) {
+				editor.setCamera({
+					x: 0,
+					y: editor.getCamera().y,
+					z: editor.getCamera().z,
+				})
+			}
+		}
 
 		if (data.type === 'pointer' && editor.getCurrentToolId() === 'draw') {
 			if (data.name === 'pointer_move') {
@@ -445,6 +462,7 @@ export default function App() {
 					if (!apiKey) throw Error('Make sure the input includes your API Key!');
 					setIsInterpreting(true);
 					await interpretShapes(editor, apiKey, newShapeId).then(() => {
+						handleStoreLog({ type: 'interpret-shape', data: { shapeId: newShapeId } });
 						setIsInterpreting(false);
 
 						const allShapes = editor.getCurrentPageShapes();
@@ -484,11 +502,11 @@ export default function App() {
 		console.log('userIdFromUrl', userIdFromUrl);
 	}, []);
 
-	useEffect(() => {
-		if (recogHistory.size > 0) {
-			console.log('recogHistory', recogHistory);
-		}
-	}, [recogHistory]);
+	// useEffect(() => {
+	// 	if (recogHistory.size > 0) {
+	// 		console.log('recogHistory', recogHistory);
+	// 	}
+	// }, [recogHistory]);
 
 	const handleTaskChange = (task: Task) => {
 		taskId.current = task.id;
@@ -535,6 +553,24 @@ export default function App() {
 		await addCollection(`${userId.current}_${taskId.current}`, logEvent);
 	};
 
+	const handleSelectBrush = (brush: ControlBrusheType) => {
+		editorRef.current?.setCurrentTool('draw', { color: 'red' });
+		console.log(editorRef.current?.getCurrentTool())
+		// const availableBrushes = [
+		// 	{ type: 'reference', description: 'Reference', icon: <IoLinkOutline />, color: 'rgb(66, 99, 235)', dataId: 'style.color.blue' },
+		// 	{ type: 'delete', description: 'Delete', icon: <FaDeleteLeft />, color: 'rgb(247, 103, 7)', dataId: 'style.color.orange' },
+		// 	{ type: 'add', description: 'Add', icon: <IoAddCircle />, color: 'rgb(77, 171, 247)', dataId: 'style.color.light-blue' },
+		// 	{ type: 'replace', description: 'Replace', icon: <VscReplace />, color: 'rgb(255, 192, 120)', dataId: 'style.color.yellow' },
+		// ];
+		const button = document.querySelector(`button[data-testid="${availableBrushes.find(b => b.type === brush)?.dataId}"]`) as HTMLButtonElement;
+		if (button) {
+			button.click();
+		} else {
+			console.log('Button not found');
+		}
+	}
+
+
 	return (
 		<div className="editor">
 			<Tldraw
@@ -543,10 +579,13 @@ export default function App() {
 					codeShapeId={newShapeId}
 					onTaskChange={handleTaskChange}
 					onStoreLog={handleStoreLog}
+					onBrushSelect={handleSelectBrush}
 					isInterpreting={isInterpreting}
 				/>}
 				shapeUtils={shapeUtils}
+				// components={components}
 				onMount={(editor) => {
+					editorRef.current = editor;
 					editor.on('event', (event) => handleEvent(event, editor));
 
 					editor.getInitialMetaForShape = (_shape) => {
@@ -572,6 +611,7 @@ export default function App() {
 				<InsideOfContext {...{ newShapeId, currentTask, onManualCodeChange: handleManualCodeChange }} />
 				<MetaUiHelper onStoreLog={handleStoreLog} codeShapeId={newShapeId} />
 				{/* <RecognitionHistories histories={recogHistory} /> */}
+				<LockCodeEditorButton codeShapeId={newShapeId} onStoreLog={handleStoreLog} />
 			</Tldraw>
 		</div>
 	)

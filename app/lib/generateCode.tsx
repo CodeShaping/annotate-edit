@@ -53,7 +53,7 @@ export async function generateCode(
 		groupShape = selectedShapes.find((shape) => shape.id === groupId) as TLGroupShape || editor.getShape(groupId) as TLGroupShape
 		intended_edit = groupShape.meta.intended_edit as string
 	}
-	console.log(selectedShapes)
+	console.log('Selected Shapes:', selectedShapes)
 
 	// const { maxX, midY } = editor.getSelectionPageBounds()!
 	const box = editor.getSelectionPageBounds() as Box;
@@ -117,7 +117,7 @@ export async function generateCode(
 		if (matches && matches[1]) {
 			message = matches[1];
 		}
-		console.log(message)
+		// console.log(message)
 		if (groupId) {
 			try {
 				const parsedMessage = JSON.parse(message);
@@ -147,7 +147,7 @@ export async function generateCode(
 				const diff = Diff.diffLines(originalCode, newCodeEdit);
 				let currentIndex = 0;
 				let newCode = '';
-				console.log(diff);
+				// console.log(diff);
 				const normalizeString = (str: string) => str.replace(/\s+/g, '');
 
 				// Create a normalized version of allCode and a mapping of indices from normalized to original

@@ -25,7 +25,7 @@ export const db = getFirestore(app);
 
 // {userId}-{taskId}
 export const addCollection = async (collectionName: string, data: any) => {
-    return;
+    // return;
     try {
         const docRef = await addDoc(collection(db, collectionName), {
             ...data,

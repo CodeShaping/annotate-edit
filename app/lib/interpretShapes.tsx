@@ -98,7 +98,7 @@ export async function interpretShapes(editor: Editor, apiKey: string, codeShapeI
 			message = matches[1];
 		}
 		const parsedMessage = JSON.parse(message);
-		console.log('message\n', parsedMessage)
+		// console.log('message\n', parsedMessage)
 		let sketches = parsedMessage;
 		// location to all positive values
 		sketches = sketches?.map((sketch: Sketch) => {
@@ -154,12 +154,11 @@ export async function interpretShapes(editor: Editor, apiKey: string, codeShapeI
 					const shape = editor.getShape(shapeId)
 					if (shape && shape.type === 'group') {
 						const group = shape as TLGroupShape
-						console.log('group\n', group)
 						editor.ungroupShapes([group.id])
 						// new_group_shapes.splice(index, 1)
 					}
 				})
-				console.log('new_group_shapes\n', new_group_shapes)
+				// console.log('new_group_shapes\n', new_group_shapes)
 
 				if (new_group_shapes.length > 0) {
 					// editor.groupShapes(new_group_shapes, groupID)
