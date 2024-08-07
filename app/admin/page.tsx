@@ -49,7 +49,9 @@ export default function Admin() {
     };
 
     const renderLogData = (log: any) => {
-        if (log.type === 'generate-param') {
+        // if log type is an object then stringify it
+        log.data = typeof log.data === 'object' ? JSON.stringify(log.data) : log.data;
+        if (log.type === 'generate-param' || log.type === 'start-interpretation') {
             return <Image
                 src={log.data}
                 alt="Generated"

@@ -10,7 +10,7 @@ export const userStudyTasks: Task[] = [
     {
         id: '1-1',
         title: 'Task 1-1',
-        description: 'Sort Tasks by new attribute: "Due Date"',
+        description: 'Sort Tasks by attribute "due_date"',
         starterCode: `class Task:
     def __init__(self, title, description):
         self.title = title
@@ -55,7 +55,7 @@ if __name__ == "__main__":
     {
         id: '1-2',
         title: 'Task 1-2',
-        description: 'Allow User to Update Task Details and Delete Tasks',
+        description: 'Allow User to Update Task Details',
         starterCode: `from datetime import datetime
 
 class Task:
@@ -110,7 +110,7 @@ if __name__ == "__main__":
     {
         id: '2-1',
         title: 'Task 2-1',
-        description: 'Implement & Support the Manhattan Distance Metric',
+        description: 'Implement the Manhattan Distance Metric',
         starterCode: `import numpy as np
 from typing import List, Tuple
 
@@ -138,7 +138,7 @@ print(f"Nearest neighbors to {query_point}: {nearest_neighbors}")
     {
         id: '2-2',
         title: 'Task 2-2',
-        description: 'Support Datatype with Categorical Features (use one-hot encoding)',
+        description: 'Support Datatype with Categorical Features',
         starterCode: `import numpy as np
 from typing import List, Tuple
 
@@ -175,7 +175,7 @@ print(f"Nearest neighbors to {query_point} using Manhattan distance: {nearest_ne
     {
         id: '3-1',
         title: 'Task 3-1',
-        description: 'Impute Missing Data & Feature Engineering for Quadratic Terms',
+        description: 'Impute Missing Data & Feature Engineering',
         starterCode: `import numpy as np
 import pandas as pd
 from typing import List, Dict
@@ -204,7 +204,7 @@ print(processed_df)`,
     {
         id: '3-2',
         title: 'Task 3-2',
-        description: 'Visualize Data Distribution & Implement Feature Scaling',
+        description: 'Visualize Data Distribution',
         //         starterCode: `import numpy as np
         // import pandas as pd
         // from typing import List, Dict

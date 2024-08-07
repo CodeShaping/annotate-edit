@@ -49,7 +49,7 @@ export async function generateCode(
 	let selectedShapes = editor.getCurrentPageShapes() as TLShape[]
 
 	if (groupId) {
-		selectedShapes = selectedShapes.filter((shape) => shape.id === groupId || shape.type === 'code-editor-shape')
+		// selectedShapes = selectedShapes.filter((shape) => shape.id === groupId || shape.type === 'code-editor-shape')
 		groupShape = selectedShapes.find((shape) => shape.id === groupId) as TLGroupShape || editor.getShape(groupId) as TLGroupShape
 		intended_edit = groupShape.meta.intended_edit as string
 	}
@@ -218,7 +218,7 @@ export async function generateCode(
 		}
 
 		// setEditing
-		editor.setSelectedShapes([codeShapeId])
+		// editor.setSelectedShapes([codeShapeId])
 		editor.setEditingShape(codeShapeId)
 
 	} catch (e) {

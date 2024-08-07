@@ -212,7 +212,7 @@ export const MetaUiHelper = track(function MetaUiHelper({ onStoreLog, codeShapeI
 	// };
 
 	const handleRemoveShapes = () => {
-		onStoreLog({ type: 'remove-shape', data: { shapeId: onlySelectedShape.id || onlyHoveredShape.id } });
+		onStoreLog({ type: 'remove-shape', data: onlySelectedShape.meta.shape });
 		editor.deleteShapes([onlySelectedShape.id || onlyHoveredShape.id]);
 	};
 
@@ -233,7 +233,7 @@ export const MetaUiHelper = track(function MetaUiHelper({ onStoreLog, codeShapeI
 		if (onlyHoveredShape) {
 			editor.updateShape({ ...onlyHoveredShape, meta: { ...onlyHoveredShape.meta, intended_edit: editText } });
 		}
-		onStoreLog({ type: 'edit-interpretation', data: { shapeId: onlySelectedShape.id, intended_edit: editText } });
+		onStoreLog({ type: 'edit-interpretation', data: editText });
 		setIsEditing(false);
 	};
 
@@ -246,7 +246,7 @@ export const MetaUiHelper = track(function MetaUiHelper({ onStoreLog, codeShapeI
 			toggleExpand(groupId);
 			// update onlySelectedShape with the new meta
 			editor.updateShape({ ...onlySelectedShape, meta: { ...onlySelectedShape.meta, original_code, code_edit } });
-			onStoreLog({ type: 'commit-change', data: { shapeId: groupId, original_code, code_edit } });
+			onStoreLog({ type: 'commit-change', data: code_edit });
 		}
 		setIsGenerating(true);
 		await generateCode(editor, apiKey, codeShapeId as TLShapeId, onStart, onFinish, onStoreLog, groupId);
@@ -351,7 +351,8 @@ export const MetaUiHelper = track(function MetaUiHelper({ onStoreLog, codeShapeI
 })
 
 export type LogType = 'edit' | 'exit-edit' | 'compile' | 'compiled-result' | 'compiled-error'
-	| 'generate-param' | 'generate-code' | 'generate-error' | 'switch-task' | 'interpret-shape' | 'brush' | 'commit-change' | 'remove-shape' | 'edit-interpretation'
+	| 'generate-param' | 'generate-code' | 'generate-error' | 'switch-task' | 'end-interpretation' | 'brush' | 
+	'commit-change' | 'remove-shape' | 'edit-interpretation' | 'start-interpretation' | 'accept-changes' | 'reject-changes'
 export interface LogEvent {
 	type: LogType
 	userId: string
@@ -427,18 +428,18 @@ export default function App() {
 	const editorRef = useRef<Editor | null>(null);
 
 	const handleEvent = useCallback(async (data: TLEventInfo, editor: Editor) => {
-		const newEvents = events.slice(0, 100)
-		if (
-			newEvents[newEvents.length - 1] &&
-			newEvents[newEvents.length - 1].type === 'pointer' &&
-			data.type === 'pointer' &&
-			data.target === 'canvas'
-		) {
-			newEvents[newEvents.length - 1] = data
-		} else {
-			newEvents.unshift(data)
-		}
-		setEvents(newEvents)
+		// const newEvents = events.slice(0, 100)
+		// if (
+		// 	newEvents[newEvents.length - 1] &&
+		// 	newEvents[newEvents.length - 1].type === 'pointer' &&
+		// 	data.type === 'pointer' &&
+		// 	data.target === 'canvas'
+		// ) {
+		// 	newEvents[newEvents.length - 1] = data
+		// } else {
+		// 	newEvents.unshift(data)
+		// }
+		// setEvents(newEvents)
 		// console.log('events', data)
 		if (data.type === 'wheel') {
 			// only allow vertical scrolling
@@ -461,8 +462,8 @@ export default function App() {
 					const apiKey = process.env.NEXT_PUBLIC_OPENAI_API_KEY;
 					if (!apiKey) throw Error('Make sure the input includes your API Key!');
 					setIsInterpreting(true);
-					await interpretShapes(editor, apiKey, newShapeId).then(() => {
-						handleStoreLog({ type: 'interpret-shape', data: { shapeId: newShapeId } });
+					await interpretShapes(editor, apiKey, newShapeId, handleStoreLog).then(() => {
+						// handleStoreLog({ type: 'interpret-shape', data: { shapeId: newShapeId } });
 						setIsInterpreting(false);
 
 						const allShapes = editor.getCurrentPageShapes();
@@ -484,7 +485,7 @@ export default function App() {
 
 						setRecogHistory(new Map(currentRecogHistory));
 					});
-				}, 1200); // Wait for 1.2 seconds
+				}, 2000); // Wait for 2 seconds
 			}
 
 			if (data.name === 'pointer_up') lastEventType.current = null;

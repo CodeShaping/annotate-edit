@@ -74,7 +74,7 @@ export class CodeEditorShapeUtil extends BaseBoxShapeUtil<CodeEditorShape> {
             python(),
             javascript(),
             unifiedMergeView({
-                original: shape.props.code,
+                original: shape.props.prevCode,
                 syntaxHighlightDeletions: false,
                 mergeControls: true
             }),
@@ -96,15 +96,15 @@ export class CodeEditorShapeUtil extends BaseBoxShapeUtil<CodeEditorShape> {
             if (isEditing) {
                 codeMirrorRef.current?.view?.focus();
                 // setCameraPosition({ x: 0, y: 0 })
-                this.editor.setCamera({x: 0, y: 0})
-                this.editor.updateShape<CodeEditorShape>({
-                    id: shape.id,
-                    type: 'code-editor-shape',
-                    props: {
-                        ...shape.props,
-                        h: window.innerHeight
-                    }
-                })
+                // this.editor.setCamera({x: 0, y: 0})
+                // this.editor.updateShape<CodeEditorShape>({
+                //     id: shape.id,
+                //     type: 'code-editor-shape',
+                //     props: {
+                //         ...shape.props,
+                //         h: window.innerHeight
+                //     }
+                // })
             } else {
                 this.editor.updateShape<CodeEditorShape>({
                     id: shape.id,
@@ -182,6 +182,7 @@ export class CodeEditorShapeUtil extends BaseBoxShapeUtil<CodeEditorShape> {
         const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
             // set cursor to the location of the touch
             const touch = e.touches[0];
+            console.log('touch', e.touches)
             const editorView = codeMirrorRef.current?.view;
             if (editorView) {
                 const pos = editorView.posAtCoords({ x: touch.clientX, y: touch.clientY });

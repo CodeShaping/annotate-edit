@@ -8,7 +8,7 @@ import { blobToBase64 } from './blobToBase64'
 import { addGridToSvg } from './addGridToSvg'
 import { addCoordinateToSvg } from './addCoordinateToSvg'
 import { PreviewShape } from '../PreviewShape/PreviewShape'
-import { CodeEditorShape } from '../CodeEditorShape/CodeEditorShape'
+import { CodeEditorShape } from '../CodeEditorShape/CodeEditorShape';
 
 import { downloadDataURLAsFile } from './downloadDataUrlAsFile'
 import groupShapes from './objectDetection';
@@ -21,11 +21,12 @@ export interface Sketch {
 	matched_selected_shapes?: TLShapeId[];
 }
 
-export async function interpretShapes(editor: Editor, apiKey: string, codeShapeId: TLShapeId) {
+export async function interpretShapes(editor: Editor, apiKey: string, codeShapeId: TLShapeId, handleStoreLog: (log: any) => void) {
 	editor.resetZoom()
 
 	let selectedShapes = editor.getCurrentPageShapes() as TLShape[]
-	const codeEditorShape = selectedShapes.find((shape) => shape.type === 'code-editor-shape') as CodeEditorShape
+	// const codeEditorShape = selectedShapes.find((shape) => shape.type === 'code-editor-shape') as CodeEditorShape
+	const codeEditorShape = editor.getCurrentPageShapes().find((shape) => shape.id === codeShapeId) as CodeEditorShape
 
 	console.log('INTERPRET SHAPES\n', selectedShapes, codeEditorShape)
 
@@ -82,6 +83,8 @@ export async function interpretShapes(editor: Editor, apiKey: string, codeShapeI
 			codeEditorShape,
 		});
 
+		handleStoreLog({ type: 'start-interpretation', data: dataUrl })
+
 		if (!json) {
 			throw Error('Could not contact OpenAI.')
 		}
@@ -118,6 +121,13 @@ export async function interpretShapes(editor: Editor, apiKey: string, codeShapeI
 			editor
 		)
 		console.log('shapeGroups\n', groupedShapes)
+		// remove all metas from the shapes
+		selectedShapes.forEach((shape) => {
+			editor.updateShape({
+				...shape,
+				meta: {}
+			})
+		})
 
 		groupedShapes.forEach((sketch) => {
 			const groupID = createShapeId();
@@ -186,8 +196,9 @@ export async function interpretShapes(editor: Editor, apiKey: string, codeShapeI
 								contained_shapes: matched_selected_shapes,
 							}
 						})
-
+						
 						editor.setSelectedShapes([closestShape.id])
+						handleStoreLog({ type: 'end-interpretaion', data: intended_edit || '' })
 					}
 				}
 
@@ -205,5 +216,6 @@ export async function interpretShapes(editor: Editor, apiKey: string, codeShapeI
 			type: 'code-editor-shape',
 			isLocked: true,
 		})
+		editor.setEditingShape(null)
 	}
 }
