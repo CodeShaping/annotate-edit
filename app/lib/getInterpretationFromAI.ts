@@ -1,38 +1,32 @@
 import { CodeEditorShape } from '../CodeEditorShape/CodeEditorShape'
 import {
-    OPENAI_MAKE_CODE_PROMPT,
-    OPENAI_USER_MAKE_CODE_PROMPT,
-    OPENAI_EDIT_PARTIAL_CODE_PROMPT,
-    OPENAI_USER_EDIT_PARTIAL_CODE_PROMPT,
+    OPENAI_INTERPRETATION_SKETCH_PROMPT,
+    OPENAI_USER_INTERPRETATION_SKETCH_PROMPT,
 } from '../prompt'
 
-export async function getCodeFromOpenAI({
-    interpretation,
+export async function getInterpretationFromAI({
     image,
     apiKey,
     text,
     grid,
-    previousCodeEditors = [],
-    intended_edit,
+    codeEditorShape,
 }: {
-    interpretation: string
     image: string
     apiKey: string
     text: string
     grid?: {
-        color: string
-        size: number
-        labels: boolean
+    	color: string
+    	size: number
+    	labels: boolean
     }
-    previousCodeEditors?: CodeEditorShape[]
-    intended_edit?: string
+    codeEditorShape: CodeEditorShape
 }) {
     if (!apiKey) throw Error('You need to provide an API key (sorry)')
 
     const messages: GPT4oCompletionRequest['messages'] = [
         {
             role: 'system',
-            content: intended_edit?.length ? OPENAI_EDIT_PARTIAL_CODE_PROMPT : OPENAI_MAKE_CODE_PROMPT,
+            content: OPENAI_INTERPRETATION_SKETCH_PROMPT,
         },
         {
             role: 'user',
@@ -44,7 +38,7 @@ export async function getCodeFromOpenAI({
 
     userContent.push({
         type: 'text',
-        text: intended_edit?.length ? OPENAI_USER_EDIT_PARTIAL_CODE_PROMPT : OPENAI_USER_MAKE_CODE_PROMPT,
+        text: OPENAI_USER_INTERPRETATION_SKETCH_PROMPT,
     })
 
     // Add the image
@@ -56,14 +50,7 @@ export async function getCodeFromOpenAI({
         },
     })
 
-    if (interpretation) {
-        userContent.push({
-            type: 'text',
-            text: `The user specified following action to take: "${interpretation}"`,
-        })
-    }
 
-    // Add the strings of text
     if (text) {
         userContent.push({
             type: 'text',
@@ -71,28 +58,20 @@ export async function getCodeFromOpenAI({
         })
     }
 
-    if (grid) {
-        userContent.push({
-            type: 'text',
-            text: `The user have a ${grid.color} grid overlaid on top. Each cell of the grid is ${grid.size}x${grid.size}px.`,
-        })
-    }
+    // if (grid) {
+    // 	userContent.push({
+    // 		type: 'text',
+    // 		text: `The user have a ${grid.color} grid overlaid on top. Each cell of the grid is ${grid.size}x${grid.size}px.`,
+    // 	})
+    // }
 
-    // Add the previous previews code
-    for (let i = 0; i < previousCodeEditors.length; i++) {
-        const preview = previousCodeEditors[i]
-        userContent.push({
+    // 
+    userContent.push(
+        {
             type: 'text',
-            text: `The users also included the code in the code editor:\n${preview.props.code}`,
-        })
-    }
-
-    if (intended_edit?.length) {
-        userContent.push({
-            type: 'text',
-            text: `The user intended to edit the code to: "${intended_edit}"`,
-        })
-    }
+            text: `And here's the code that user annotated with: ${codeEditorShape.props.code}`,
+        }
+    )
 
     // Prompt the theme
     // userContent.push({
@@ -103,7 +82,7 @@ export async function getCodeFromOpenAI({
     const body: GPT4oCompletionRequest = {
         model: 'gpt-4o',
         max_tokens: 4096,
-        temperature: 0,
+        temperature: 1,
         messages,
         seed: 42,
         n: 1,
@@ -121,6 +100,7 @@ export async function getCodeFromOpenAI({
             body: JSON.stringify(body),
         })
         json = await resp.json()
+        // console.log(json)
     } catch (e: any) {
         throw Error(`Could not contact OpenAI: ${e.message}`)
     }
@@ -148,7 +128,7 @@ type MessageContent =
     )[]
 
 export type GPT4oCompletionRequest = {
-    model: 'gpt-4o'
+    model: 'gpt-4o' | 'gpt-4o-mini' | 'gpt-4-turbo'
     messages: {
         role: 'system' | 'user' | 'assistant' | 'function'
         content: MessageContent

@@ -1,6 +1,6 @@
 import {
     Editor, createShapeId, TLBaseShape, TLImageShape, TLTextShape,
-    AssetRecordType,
+    AssetRecordType, type TLShapeId
 } from '@tldraw/tldraw'
 import { getSelectionAsText } from './getSelectionAsText'
 import { CodeEditorShape } from '../CodeEditorShape/CodeEditorShape'
@@ -16,7 +16,7 @@ import { PreviewShape } from '../PreviewShape/PreviewShape';
 
 export type CodeExecResultType = "image" | "text" | "table";
 export interface CodeExecReturnValue {
-    result: string | null;
+    result: any | null;
     error: string | null;
     stdout: string | null;
     stderr: string | null;
@@ -50,7 +50,39 @@ def ensure_matplotlib_patch():
 ensure_matplotlib_patch()\n
 `;
 
-function tableToHtml(output: string, id: string, className: string): string {
+const anotherPatchPrefix = `import os
+from matplotlib import pyplot as plt
+import io
+import base64
+import js
+
+
+class Dud:
+
+    def __init__(self, *args, **kwargs) -> None:
+        return
+
+    def __getattr__(self, __name: str):
+        return Dud
+
+
+js.document = Dud()
+`
+const anotherPatchSuffix = `
+
+# Print base64 string to stdout
+bytes_io = io.BytesIO()
+
+plt.savefig(bytes_io, format='jpg')
+
+bytes_io.seek(0)
+
+base64_encoded_spectrogram = base64.b64encode(bytes_io.read())
+
+print('data:image/jpg;base64,' + base64_encoded_spectrogram.decode('utf-8'))
+`
+
+function tableToHtml(output: string, id: TLShapeId, className: string): string {
     const lines = output.split("\n");
     let html = `<style>
         .${className} {
@@ -130,7 +162,6 @@ const codeRefactoring = async (code: string): Promise<string> => {
     }
 
     if (lastLineIndex < 0) {
-        // All lines are empty
         return code;
     }
 
@@ -141,7 +172,9 @@ const codeRefactoring = async (code: string): Promise<string> => {
         code.includes("plt.show") ||
         code.includes("sns")
     ) {
-        return `${matplotlibCode}\n${code}`;
+        // return `${matplotlibCode}\n${code}`;
+        return `${anotherPatchPrefix}\n${code}\n${anotherPatchSuffix}`;
+        // return code
     }
     else if (lastLine.includes("df.") && !lastLine.includes("print")) {
         return code.replace(lastLine, `print(${lastLine})`);
@@ -193,75 +226,83 @@ const decideExecResultType = (result: any) => {
 };
 
 
-export async function executeCode(editor: Editor) {
-    const selectedShapes = editor.getSelectedShapes()
+export async function executeCode(editor: Editor, codeShapeId: TLShapeId) {
+    // const selectedShapes = editor.getSelectedShapes()
 
-    if (selectedShapes.length === 0) throw Error('First select something to execute.')
+    // if (selectedShapes.length === 0) throw Error('First select something to execute.')
     await xPython.init();
 
 
-    const { maxX, midY } = editor.getSelectionPageBounds()!
-    const newShapeId = createShapeId()
-    let allSelectedCode = ''
-    for (const shape of selectedShapes) {
-        if (shape.type === 'code-editor-shape') {
-            allSelectedCode += (shape as CodeEditorShape).props.code
-        }
-    }
+    // const { maxX, midY } = editor.getSelectionPageBounds()!
+    // const newShapeId = createShapeId()
+    // for (const shape of selectedShapes) {
+    //     if (shape.type === 'code-editor-shape') {
+    //         allSelectedCode += (shape as CodeEditorShape).props.code
+    //     }
+    // }
 
+    const codeEditorShape = editor.getShape<CodeEditorShape>(codeShapeId)
+    if (!codeEditorShape || codeEditorShape.props.code === '') { throw Error('No code to execute.') }
 
-    allSelectedCode = await codeRefactoring(allSelectedCode);
+    const allSelectedCode = await codeRefactoring(codeEditorShape.props.code)
     await installExtraPackages(allSelectedCode);
+    const { result: code } = await xPython.format({
+        code: allSelectedCode,
+    });
+
 
     const { error, stdout, stderr } = (await xPython.exec({
-        code: allSelectedCode,
+        code: code,
     })) as CodeExecReturnValue;
 
-    if (error) {
-        throw Error(error)
+    if (error || !stdout) {
+        throw Error(error || 'No output from the code.')
     }
-
 
     const resultType = decideExecResultType(stdout) as CodeExecResultType;
-    // console.log(`resultType: ${resultType}\n\nstdout: ${stdout}\nstderr: ${error || stderr}`);
 
-    // image
-    if (resultType === 'image' && stdout) {
-        const newShapeId = createShapeId()
-        const htmlWithImg = `<html><body><img src="${stdout}" alt="vis-${newShapeId}" width="300"></body></html>`
+    let htmlResult = '';
+    // Match only jpg images in base64 format
+    const images = stdout.match(/data:image\/jpg;base64,[^"]+/g) || [];
+    let nonImageContent = stdout;
 
-        editor.createShape<PreviewShape>({
-            id: newShapeId,
-            type: 'response',
-            x: maxX + 60,
-            y: midY - (540 * 2) / 3 / 2,
-            props: { html: htmlWithImg },
-        })
-    } else if (resultType === 'table' && (stdout)) {
-        const newShapeId = createShapeId()
-        const htmlWithTable = tableToHtml(stdout, newShapeId, 'exec-res-table')
+    // Generate HTML for each image
+    const imageHtml = images.map(image => `<img src="${image}" alt="image" width="400">`).join('');
 
-        editor.createShape<PreviewShape>({
-            id: newShapeId,
-            type: 'response',
-            x: maxX + 60,
-            y: midY - (540 * 2) / 3 / 2,
-            props: { html: htmlWithTable },
-        })
-    } else {
-        const newShapeId = createShapeId()
-        editor.createShape<TLTextShape>({
-            id: newShapeId,
-            type: 'text',
-            x: maxX + 60,
-            y: midY - (540 * 2) / 3 / 2,
-            props: {
-                text: stdout || '',
-                font: 'mono',
-                align: 'start',
-                color: 'grey',
-            },
-        })
+    // Remove image data from the non-image content
+    images.forEach(image => {
+        nonImageContent = nonImageContent.replace(image, '');
+    });
 
+    // Wrap non-image content in a <pre> tag
+    const nonImageHtml = `<pre>${nonImageContent.trim()}</pre>`;
+
+    // Combine HTML results
+    htmlResult = `${nonImageHtml}${imageHtml}`;
+
+    if (htmlResult === '') {
+        throw Error('No result to display.');
     }
+    console.log(htmlResult);
+    editor.updateShape<CodeEditorShape>({
+        id: codeShapeId,
+        type: 'code-editor-shape',
+        isLocked: false,
+        props: {
+            ...codeEditorShape.props,
+            res: htmlResult,
+        },
+    })
+
+    editor.updateShape<CodeEditorShape>({
+        id: codeShapeId,
+        type: 'code-editor-shape',
+        isLocked: true
+    })
+
+    // set editing
+    // editor.setSelectedShapes([codeShapeId])
+    // editor.setEditingShape(codeShapeId)
+
+    return htmlResult;
 }

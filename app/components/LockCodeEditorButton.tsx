@@ -1,41 +1,46 @@
-import { useEditor } from '@tldraw/tldraw'
-import { useCallback, useEffect, useState } from 'react'
-import { TLShapeId } from '@tldraw/tldraw'
+import { useEditor, type TLShapeId } from '@tldraw/tldraw'
 import type { CodeEditorShape } from '../CodeEditorShape/CodeEditorShape'
+import React, { useCallback, useEffect, useState } from 'react';
 
-export function LockCodeEditorButton({ codeShapeId }: { codeShapeId: TLShapeId }) {
-    const editor = useEditor()
-    const [codeEditor, setCodeEditor] = useState<CodeEditorShape | null>(null)
-    const [isLocked, setIsLocked] = useState<boolean>(false)
 
-    // Conditionally set the button text and CSS class based on isLocked
-    // const buttonText = isLocked ? 'Unlock' : 'Lock'
-    // const buttonClass = isLocked ? 'unlockCodeEditorButton' : 'lockCodeEditorButton'
+export function LockCodeEditorButton({ codeShapeId, onStoreLog }: { codeShapeId: TLShapeId, onStoreLog: (log: any) => void }) {
+    const editor = useEditor();
+    const [isLocked, setIsLocked] = useState(true);
+    // useEffect(() => {
+    //     const shape = editor.getShape(codeShapeId) as CodeEditorShape;
+    //     console.log('shape', shape.isLocked);
+    //     if (shape) {
+    //         setIsLocked(shape.isLocked);
+    //     }
+    // }, [editor, codeShapeId]);
 
-    const handleClick = useCallback(async () => {
-        const tempCodeEditor = editor.getShape(codeShapeId) as CodeEditorShape
-        setCodeEditor(tempCodeEditor)
-        if (!tempCodeEditor) throw Error('Could not find the code editor shape.')
+    const handleClick = useCallback(() => {
+        const tempCodeEditor = editor.getShape(codeShapeId) as CodeEditorShape;
+        if (!tempCodeEditor) throw Error('Could not find the code editor shape.');
 
+        const newLockStatus = !tempCodeEditor.isLocked;
         editor.updateShape<CodeEditorShape>({
             id: codeShapeId,
             type: 'code-editor-shape',
-            isLocked: !tempCodeEditor.isLocked,
-        })
+            isLocked: newLockStatus
+        });
 
-        setIsLocked(!isLocked)
-    }, [editor, codeShapeId, isLocked])
+        setIsLocked(newLockStatus); 
 
-    useEffect(() => {
-        setCodeEditor(editor.getShape(codeShapeId) as CodeEditorShape)
-        setIsLocked(codeEditor?.isLocked || false)
-    }, [editor, codeShapeId, codeEditor])
-
+        if (!newLockStatus) {
+            editor.setSelectedShapes([codeShapeId]);
+            editor.setEditingShape(codeShapeId);
+            onStoreLog({ type: 'edit' });
+        } else {
+            editor.setEditingShape(null);
+            editor.deselect(tempCodeEditor.id);
+            onStoreLog({ type: 'exit-edit' });
+        }
+    }, [codeShapeId, editor, onStoreLog]);
 
     return (
-        <button className={isLocked ? 'unlockCodeEditorButton' : 'lockCodeEditorButton'} onClick={handleClick}>
-            {isLocked ? 'Unlock' : 'Lock'}
+        <button className={'lockCodeEditorButton'} onClick={handleClick}>
+            {isLocked ? 'Code Edit' : 'Editing...'}
         </button>
-    )
-
+    );
 }
