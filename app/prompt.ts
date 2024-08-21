@@ -67,24 +67,37 @@ export const OPENAI_USER_MAKE_CODE_CELL_PROMPT = 'The user have just requested t
 
 
 export const OPENAI_INTERPRETATION_SKETCH_PROMPT = `
-The provided image contains handwritten annotations drawn on top of the code editor by users, specifying the changes to be made to the code.
-Decompose users' annotations into smaller parts and Group them based on their semantic meaning (arrow+text, paranthese+arrow, circles, cross, etc.).
+You are an expert programmer analyzing handwritten annotations on code. Your task is to provide a concise interpretation of these annotations. Focus on three key aspects:
 
-Please provide results in JSON format with the following example structure:
-[
-	{shape: "circle+arrow+text", location: [20, 40, 60, 120], annotated_text: "move", intended_edit: "moving varaible declaration to line 5"},
-	{shape: "arrow_dwon+text", location: [18, 19, 32, 24], annotated_text: "minmax scaling", intended_edit: "insert a feature scaling function"},
-	{shape: "visualization", location: [18, 19, 32, 24], annotated_text: "", intended_edit: "implement a scatter plot"},
-	...
-],
+1. Source: Identify the code that the annotation references or uses as a parameter necessary for code edits; no soucre then return both 0
+2. Action: Describe the action to be taken in 1-5 words. Wrap this description in the following format: [[ACTION:code edits to be made]][[RECOGNITION:recognized handwritten code or text]][[CODE:relevant code snippet from the code editor]].
+3. Target: Identify the code area where the change should be applied.
 
-location: Return the coordinates (ticked in red alongside the image) of the shape in the provided image in the format [x0, y0, x1, y1], class bounding box coordinates.
-most annotations will come with text that encapuslates the purpose of the annotation, group them together.
-intended_edit (str): the actual code edit user intend to do with drew sketches.
-All the skecthes should be interpreted and included in the JSON response.
+Provide your response in the following JSON format:
+{
+	"source": {
+		"startLine": 0,
+		"endLine": 0,
+	},
+	"action": "[[ACTION:rename variable]][[CODE:x]] to [[RECOGNITION:data]]",
+	"target": {
+		"startLine": 9,
+		"endLine": 11,
+	}
+}
+
+Another examples of "action":
+notice that recognition tag only contains the recognized handwritten text from users instead of the code editor, and sometimes the hanrdwritten text is the action itself.
+- "action": "[[ACTION:change function parameters]][[CODE:def calculate(a, b)]] to [[RECOGNITION:def calculate(data, multiplier)]]"
+- "action": "[[ACTION:add method]][[RECOGNITION:def save(self, path)]] to [[CODE:class FileManager]]"
+- "action": "[[RECOGNITION:remove line]][[CODE:line 5]]"
+- "action": "[[ACTION:move]][[CODE:def validate(data):]] to [[CODE:inside class DataValidator]]"
+- "action": "[[ACTION:refactor loop]][[CODE:for i in range(len(items)):]]"
+- "action": "[[RECOGNITION:add error handling]] to [[CODE:fetch('http://....')]]"
+- "action": "[[ACTION:change return type]][[CODE:def process() -> int:]] to [[RECOGNITION:str]]"
 `
 
-export const OPENAI_USER_INTERPRETATION_SKETCH_PROMPT = 'The user have just requested the interpretation of the sketched annotations for code edits. Please note that some types of annotations have specific colors assigned to them: blue: reference; orange: delete; green: insert/add; violet: replace. If these four colors are used, please interpret the annotations according to the specified meanings. Respond with the JSON format as shown in the example structure above.'
+export const OPENAI_USER_INTERPRETATION_SKETCH_PROMPT = 'Please analyze the handwritten annotations in the image and provide your interpretation as per the specified format.'
 
 
 export const OPENAI_INTERPRETATION_SKETCH_PROMPT_V1 = `

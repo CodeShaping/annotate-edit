@@ -147,18 +147,27 @@ class NearestNeighborRetriever:
         self.data = np.array(data)
     
     def euclidean_distance(self, point1: np.ndarray, point2: np.ndarray) -> float:
-        return np.sqrt(np.sum((point1 - point2) ** 2))
+        difference = point1 - point2
+        squared_difference = difference ** 2
+        sum_squared_difference = np.sum(squared_difference)
+        return np.sqrt(sum_squared_difference)
     
     def manhattan_distance(self, point1: np.ndarray, point2: np.ndarray) -> float:
-        return np.sum(np.abs(point1 - point2))
+        absolute_difference = np.abs(point1 - point2)
+        return np.sum(absolute_difference)
     
-    def find_nearest_neighbors(self, query_point: Tuple[float], k: int, distance_metric="euclidean") -> List[Tuple[float]]:
+    def calculate_distances(self, query_point: np.ndarray, distance_metric: str) -> List[float]:
         if distance_metric == "euclidean":
-            distances = [self.euclidean_distance(np.array(query_point), point) for point in self.data]
+            distances = [self.euclidean_distance(query_point, point) for point in self.data]
         elif distance_metric == "manhattan":
-            distances = [self.manhattan_distance(np.array(query_point), point) for point in self.data]
+            distances = [self.manhattan_distance(query_point, point) for point in self.data]
         else:
             raise ValueError("Unsupported distance metric")
+        return distances
+    
+    def find_nearest_neighbors(self, query_point: Tuple[float], k: int, distance_metric="euclidean") -> List[Tuple[float]]:
+        query_array = np.array(query_point)
+        distances = self.calculate_distances(query_array, distance_metric)
         nearest_indices = np.argsort(distances)[:k]
         return [self.data[i] for i in nearest_indices]
 

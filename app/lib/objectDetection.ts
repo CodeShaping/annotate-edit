@@ -82,16 +82,16 @@ export default function groupShapes(sketches: Sketch[], selectedShapes: TLShape[
         const minDistanceSketchIndex = parseInt(minDistanceSketchIndexStr);
 
         // use distance to allocate shape if overlap is too small
-        if (overlaps[maxOverlapSketchIndex][shape.id] <= 0) {
-            shapeGroups[minDistanceSketchIndex].matched_selected_shapes ?
-                shapeGroups[minDistanceSketchIndex].matched_selected_shapes.push(shape.id) :
-                shapeGroups[minDistanceSketchIndex].matched_selected_shapes = [shape.id];
-        }
-        else if (overlaps[maxOverlapSketchIndex][shape.id] > 0) {
-            shapeGroups[maxOverlapSketchIndex].matched_selected_shapes ?
-                shapeGroups[maxOverlapSketchIndex].matched_selected_shapes.push(shape.id) :
-                shapeGroups[maxOverlapSketchIndex].matched_selected_shapes = [shape.id];
-        }
+        // if (overlaps[maxOverlapSketchIndex][shape.id] <= 0) {
+        //     shapeGroups[minDistanceSketchIndex]?.matched_selected_shapes ?
+        //         shapeGroups[minDistanceSketchIndex].matched_selected_shapes.push(shape.id) :
+        //         shapeGroups[minDistanceSketchIndex].matched_selected_shapes = [shape.id];
+        // }
+        // else if (overlaps[maxOverlapSketchIndex][shape.id] > 0) {
+        //     shapeGroups[maxOverlapSketchIndex]?.matched_selected_shapes ?
+        //         shapeGroups[maxOverlapSketchIndex].matched_selected_shapes.push(shape.id) :
+        //         shapeGroups[maxOverlapSketchIndex].matched_selected_shapes = [shape.id];
+        // }
     });
 
     return shapeGroups;

@@ -2,19 +2,7 @@ import React from 'react';
 import { Scatter } from 'react-chartjs-2';
 import 'chart.js/auto';
 import { LogEvent, LogType } from '../page';
-const logTypeToNumeric = {
-    'edit': 1,
-    'exit-edit': 2,
-    'compile': 3,
-    'compiled-result': 4,
-    'compiled-error': 5,
-    'generate-param': 6,
-    'generate-code': 7,
-    'generate-error': 8,
-    'switch-task': 9,
-};
-const numericToLogType = [
-    null, // 0 index is not used, assuming your mapping starts at 1
+const logTypes = [
     'edit',
     'exit-edit',
     'compile',
@@ -24,9 +12,26 @@ const numericToLogType = [
     'generate-code',
     'generate-error',
     'switch-task',
+    'end-interpretation',
+    'brush',
+    'commit-change',
+    'remove-shape',
+    'edit-interpretation',
+    'start-interpretation',
+    'accept-changes',
+    'reject-changes'
 ];
 
 const ScatterPlot = ({ logs }: { logs: LogEvent[] }) => {
+
+    const logTypeToNumeric: { [key: string]: number } = {};
+    const numericToLogType: (string | null)[] = [null]; // 0 index is not used
+
+    logTypes.forEach((logType, index) => {
+        const numericValue = index + 1;
+        logTypeToNumeric[logType] = numericValue;
+        numericToLogType[numericValue] = logType;
+    });
 
     const mapLogTypeToNumeric = (logType: LogType) => {
         return (logTypeToNumeric[logType] as any) || 0;
@@ -95,9 +100,9 @@ const ScatterPlot = ({ logs }: { logs: LogEvent[] }) => {
         }
     } as any;
 
-    return <Scatter 
-    data={data} 
-    options={options} 
+    return <Scatter
+        data={data}
+        options={options}
     />;
 };
 

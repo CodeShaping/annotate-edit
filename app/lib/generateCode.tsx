@@ -8,7 +8,7 @@ import { addCoordinateToSvg } from './addCoordinateToSvg'
 import { CodeEditorShape } from '../CodeEditorShape/CodeEditorShape'
 
 import { downloadDataURLAsFile } from './downloadDataUrlAsFile'
-import groupShapes from './objectDetection';
+// import groupShapes from './objectDetection';
 import * as Diff from 'diff';
 // import Parser from 'web-tree-sitter';
 // import Python from 'tree-sitter-python';
@@ -25,6 +25,7 @@ export interface Sketch {
 }
 
 export async function generateCode(
+	interpretation: string,
 	editor: Editor,
 	apiKey: string,
 	codeShapeId: TLShapeId,
@@ -35,17 +36,6 @@ export async function generateCode(
 	editor.resetZoom()
 	let groupShape: TLGroupShape
 	let intended_edit = '' as string
-
-	// const shapes = editor.getCurrentPageShapes() as TLShape[]
-	// shapes.forEach(async (shape) => {
-	// 	if (shape.type === 'code-editor-shape' && shape.isLocked) {
-	// 		editor.updateShape({
-	// 			...shape,
-	// 			isLocked: false,
-	// 		})
-	// 	}
-	// })
-
 	let selectedShapes = editor.getCurrentPageShapes() as TLShape[]
 
 	if (groupId) {
@@ -53,29 +43,28 @@ export async function generateCode(
 		groupShape = selectedShapes.find((shape) => shape.id === groupId) as TLGroupShape || editor.getShape(groupId) as TLGroupShape
 		intended_edit = groupShape.meta.intended_edit as string
 	}
-	console.log('Selected Shapes:', selectedShapes)
-
-	// const { maxX, midY } = editor.getSelectionPageBounds()!
 	const box = editor.getSelectionPageBounds() as Box;
 
-	const svg = await editor.getSvg(selectedShapes, {
+	const svgString = await editor.getSvgString(selectedShapes, {
 		scale: 1,
 		background: true,
 		bounds: box,
 		padding: 50,
 	})
 
-	if (!svg) {
+	if (!svgString) {
 		return
 	}
 
 	const grid = { color: 'red', size: 50, labels: true }
 	// addCoordinateToSvg(svg, grid)
 
-	if (!svg) throw Error(`Could not get the SVG.`)
+	if (!svgString) throw Error(`Could not get the SVG.`)
 
 	const IS_SAFARI = /^((?!chrome|android).)*safari/i.test(navigator.userAgent)
-	const blob = await getSvgAsImage(svg, IS_SAFARI, {
+	const blob = await getSvgAsImage(editor, svgString.svg, {
+		height: window.innerHeight || 1080,
+		width: window.innerWidth || 1920,
 		type: 'png',
 		quality: 1,
 		scale: 1,
@@ -89,11 +78,11 @@ export async function generateCode(
 		return shape.type === 'code-editor-shape'
 	}) as CodeEditorShape[]
 
-	// return
 	let original_code, code_edit;
 
 	try {
 		const json = await getCodeFromOpenAI({
+			interpretation,
 			image: dataUrl,
 			apiKey,
 			text: getSelectionAsText(editor),
@@ -117,7 +106,7 @@ export async function generateCode(
 		if (matches && matches[1]) {
 			message = matches[1];
 		}
-		// console.log(message)
+
 		if (groupId) {
 			try {
 				const parsedMessage = JSON.parse(message);
@@ -152,7 +141,7 @@ export async function generateCode(
 
 				// Create a normalized version of allCode and a mapping of indices from normalized to original
 				const normalizedAllCode = normalizeString(allCode);
-				let originalIndexMapping = [];
+				let originalIndexMapping = [] as number[];
 				let count = 0;
 				for (let i = 0; i < allCode.length; i++) {
 					if (!/\s/.test(allCode[i])) { // If not a whitespace character
@@ -215,11 +204,17 @@ export async function generateCode(
 					code: code_edit,
 				},
 			})
+
+			editor.updateShape<CodeEditorShape>({
+				id: codeShapeId,
+				type: 'code-editor-shape',
+				isLocked: true
+			})
 		}
 
 		// setEditing
 		// editor.setSelectedShapes([codeShapeId])
-		editor.setEditingShape(codeShapeId)
+		// editor.setEditingShape(codeShapeId)
 
 	} catch (e) {
 		console.error(e)

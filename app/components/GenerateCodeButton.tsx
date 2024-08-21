@@ -1,13 +1,36 @@
 import { useEditor, useToasts } from '@tldraw/tldraw'
-import { useCallback, useState } from 'react'
+import { useCallback, useState, useEffect } from 'react'
 import { generateCode } from '../lib/generateCode'
 // import { CodeEditorShape } from '../CodeEditorShape/CodeEditorShape'
-import { TLShapeId } from '@tldraw/tldraw'
+import { TLShapeId, Editor } from '@tldraw/tldraw'
+import { VscGitPullRequest } from "react-icons/vsc";
+import { GoGitPullRequestDraft, GoCommit, GoRepoPush } from "react-icons/go";
 
-export function GenerateCodeButton({ codeShapeId, onStoreLog }: { codeShapeId: TLShapeId, onStoreLog: (log: any) => void }) {
-	const editor = useEditor()
+
+export function GenerateCodeButton({ interpretation, editor, codeShapeId, onStoreLog }: { interpretation: string, editor: Editor, codeShapeId: TLShapeId, onStoreLog: (log: any) => void }) {
+	// const editor = useEditor()
 	const { addToast } = useToasts()
-	const [isGenerating, setIsGenerating] = useState(false)
+	const [isGenerating, setIsGenerating] = useState<boolean>(false);
+	const [currentIcon, setCurrentIcon] = useState<JSX.Element>(<VscGitPullRequest />);
+
+	const icons = [
+	  <GoGitPullRequestDraft key="pull-request" />,
+	  <GoCommit key="commit" />,
+	  <GoRepoPush key="repo-push" />
+	];
+
+    useEffect(() => {
+        let interval: NodeJS.Timeout;
+        if (isGenerating) {
+            interval = setInterval(() => {
+                const randomIndex = Math.floor(Math.random() * icons.length);
+                setCurrentIcon(icons[randomIndex]);
+            }, Math.random() * 3000 + 1000); // Random interval between 1-3 seconds
+        } else {
+            setCurrentIcon(<VscGitPullRequest />);
+        }
+        return () => clearInterval(interval);
+    }, [isGenerating]);
 
 	const handleClick = useCallback(async () => {
 		try {
@@ -23,7 +46,7 @@ export function GenerateCodeButton({ codeShapeId, onStoreLog }: { codeShapeId: T
 				setIsGenerating(false)
 			}
 			
-			await generateCode(editor, apiKey, codeShapeId, onStart, onFinish, onStoreLog)
+			await generateCode(interpretation, editor, apiKey, codeShapeId, onStart, onFinish, onStoreLog)
 		} catch (e) {
 			console.error(e)
 			addToast({
@@ -38,7 +61,9 @@ export function GenerateCodeButton({ codeShapeId, onStoreLog }: { codeShapeId: T
 
 	return (
 		<button className="makeRealButton" onClick={handleClick}>
-			{isGenerating ? 'Generating...' : '🪄 Generate'}
+			{currentIcon}
+			<span style={{ marginLeft: '0.2rem' }} />
+			{isGenerating ? 'Commiting Changes...' : 'Commit'}
 		</button>
 	)
 }

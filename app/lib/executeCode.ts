@@ -283,14 +283,21 @@ export async function executeCode(editor: Editor, codeShapeId: TLShapeId) {
     if (htmlResult === '') {
         throw Error('No result to display.');
     }
+    console.log(htmlResult);
     editor.updateShape<CodeEditorShape>({
         id: codeShapeId,
         type: 'code-editor-shape',
-        isLocked: true,
+        isLocked: false,
         props: {
             ...codeEditorShape.props,
             res: htmlResult,
         },
+    })
+
+    editor.updateShape<CodeEditorShape>({
+        id: codeShapeId,
+        type: 'code-editor-shape',
+        isLocked: true
     })
 
     // set editing

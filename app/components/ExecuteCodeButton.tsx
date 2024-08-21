@@ -1,12 +1,12 @@
-import { useEditor, useToasts, type TLShapeId } from '@tldraw/tldraw'
+import { useEditor, useToasts, type TLShapeId, Editor } from '@tldraw/tldraw'
 import { useCallback, useState } from 'react'
 import { executeCode } from '../lib/executeCode'
 import { VscRunAll } from "react-icons/vsc";
 import { FaRunning } from "react-icons/fa";
 
 
-export function ExecuteCodeButton({ codeShapeId, onStoreLog }: { codeShapeId: TLShapeId, onStoreLog: (log: any) => void }) {
-	const editor = useEditor()
+export function ExecuteCodeButton({ editor, codeShapeId, onStoreLog }: { editor: Editor, codeShapeId: TLShapeId, onStoreLog: (log: any) => void }) {
+	// const editor = useEditor()
 	const { addToast } = useToasts()
 	const [isExecuting, setIsExecuting] = useState(false)
 

@@ -11,7 +11,7 @@ import { PreviewShape } from '../PreviewShape/PreviewShape'
 import { CodeEditorShape } from '../CodeEditorShape/CodeEditorShape';
 
 import { downloadDataURLAsFile } from './downloadDataUrlAsFile'
-import groupShapes from './objectDetection';
+// import groupShapes from './objectDetection';
 
 export interface Sketch {
 	shape: string;
@@ -21,7 +21,21 @@ export interface Sketch {
 	matched_selected_shapes?: TLShapeId[];
 }
 
-export async function interpretShapes(editor: Editor, apiKey: string, codeShapeId: TLShapeId, handleStoreLog: (log: any) => void) {
+export interface InterpretationResult {
+	source: {
+		code: string;
+		startLine: number;
+		endLine: number;
+	};
+	action: string;
+	target: {
+		code: string;
+		startLine: number;
+		endLine: number;
+	};
+}
+
+export async function interpretShapes(editor: Editor, apiKey: string, codeShapeId: TLShapeId, handleStoreLog: (log: any) => void): Promise<InterpretationResult> {
 	editor.resetZoom()
 
 	let selectedShapes = editor.getCurrentPageShapes() as TLShape[]
@@ -45,24 +59,32 @@ export async function interpretShapes(editor: Editor, apiKey: string, codeShapeI
 
 	const box = editor.getSelectionPageBounds() as Box;
 
-	const svg = await editor.getSvg(selectedShapes, {
+	const svgString = await editor.getSvgString(selectedShapes, {
 		scale: 1,
 		background: true,
 		bounds: box,
 		padding: 50,
 	})
 
-	if (!svg) {
-		return
+	// const svgElement = await editor.getSvgElement(selectedShapes, {
+	// 	scale: 1,
+	// 	background: true,
+	// 	bounds: box,
+	// 	padding: 50,
+	// });
+
+	if (!svgString) {
+		throw Error(`Could not get the SVG.`)
 	}
 
 	const grid = { color: '#fc0000', size: 50, labels: true }
-	addCoordinateToSvg(svg, grid)
+	// addCoordinateToSvg(svgElement?.svg as SVGSVGElement, grid)
 
-	if (!svg) throw Error(`Could not get the SVG.`)
 
-	const IS_SAFARI = /^((?!chrome|android).)*safari/i.test(navigator.userAgent)
-	const blob = await getSvgAsImage(svg, IS_SAFARI, {
+	// const IS_SAFARI = /^((?!chrome|android).)*safari/i.test(navigator.userAgent)
+	const blob = await getSvgAsImage(editor, svgString.svg, {
+		height: window.innerHeight || 1080,
+		width: window.innerWidth || 1920,
 		type: 'png',
 		quality: 1,
 		scale: 1,
@@ -71,8 +93,33 @@ export async function interpretShapes(editor: Editor, apiKey: string, codeShapeI
 	// downloadDataURLAsFile(dataUrl, 'tldraw.png')
 
 	// onStoreLog({ type: 'generate-param', data: dataUrl })
+	// const fakeRes = {
+	// 	interpretations: [
+	// 		{
+	// 			source: {
+	// 				startLine: 1,
+	// 				endLine: 3,
+	// 			},
+	// 			action: "Rename function",
+	// 			target: {
+	// 				startLine: 8,
+	// 				endLine: 10,
+	// 			}
+	// 		}
+	// 	]
+	// } as InterpretationResult
 
-	// return
+	// editor.updateShape<CodeEditorShape>({
+	// 	id: codeShapeId,
+	// 	type: 'code-editor-shape',
+	// 	isLocked: false,
+	// 	props: {
+	// 		...codeEditorShape.props,
+	// 		interpretations: fakeRes.interpretations || [],
+	// 	},
+	// });
+
+	// return fakeRes;
 
 	try {
 		const json = await getInterpretationFromAI({
@@ -100,111 +147,124 @@ export async function interpretShapes(editor: Editor, apiKey: string, codeShapeI
 		if (matches && matches[1]) {
 			message = matches[1];
 		}
-		const parsedMessage = JSON.parse(message);
-		// console.log('message\n', parsedMessage)
-		let sketches = parsedMessage;
-		// location to all positive values
-		sketches = sketches?.map((sketch: Sketch) => {
-			const location = sketch.location
-			return {
-				...sketch,
-				location: [Math.abs(location[0]), Math.abs(location[1]), Math.abs(location[2]), Math.abs(location[3])]
-			}
-		})
+		const parsedContent = JSON.parse(message);
+		console.log('message\n', message, '\n\n', parsedContent)
+		// let sketches = parsedMessage;
+		// // location to all positive values
+		// sketches = sketches?.map((sketch: Sketch) => {
+		// 	const location = sketch.location
+		// 	return {
+		// 		...sketch,
+		// 		location: [Math.abs(location[0]), Math.abs(location[1]), Math.abs(location[2]), Math.abs(location[3])]
+		// 	}
+		// })
+
+		editor.updateShape<CodeEditorShape>({
+			id: codeShapeId,
+			type: 'code-editor-shape',
+			isLocked: false,
+			props: {
+				...codeEditorShape.props,
+				interpretations: parsedContent || [],
+			},
+		});
+
+		return parsedContent
 
 
 		// tempSelectedShapes = tempSelectedShapes.concat(...selectedShapes.filter((shape) => shape.type === 'group'))
 		// console.log('tempSelectedShapes\n', tempSelectedShapes)
-		const groupedShapes = groupShapes(
-			sketches,
-			[...selectedShapes.filter((shape) => shape.type !== 'code-editor-shape') as TLShape[]],
-			editor
-		)
-		console.log('shapeGroups\n', groupedShapes)
-		// remove all metas from the shapes
-		selectedShapes.forEach((shape) => {
-			editor.updateShape({
-				...shape,
-				meta: {}
-			})
-		})
+		// const groupedShapes = groupShapes(
+		// 	sketches,
+		// 	[...selectedShapes.filter((shape) => shape.type !== 'code-editor-shape') as TLShape[]],
+		// 	editor
+		// )
+		// console.log('shapeGroups\n', groupedShapes)
+		// // remove all metas from the shapes
+		// selectedShapes.forEach((shape) => {
+		// 	editor.updateShape({
+		// 		...shape,
+		// 		meta: {}
+		// 	})
+		// })
 
-		groupedShapes.forEach((sketch) => {
-			const groupID = createShapeId();
-			const { shape, annotated_text, location, intended_edit, matched_selected_shapes } = sketch;
+		// groupedShapes.forEach((sketch) => {
+		// 	const groupID = createShapeId();
+		// 	const { shape, annotated_text, location, intended_edit, matched_selected_shapes } = sketch;
 
-			// // BOUNDING BOX
-			// editor.createShape<TLGeoShape>({
-			// 	id: createShapeId(),
-			// 	type: 'geo',
-			// 	isLocked: false,
-			// 	x: location[0],
-			// 	y: location[1],
-			// 	props: {
-			// 		geo: 'rectangle',
-			// 		fill: 'none',
-			// 		size: 's',
-			// 		color: 'grey',
-			// 		w: location[2] - location[0] <= 0 ? 10 : location[2] - location[0],
-			// 		h: location[3] - location[1] <= 0 ? 10 : location[3] - location[1],
-			// 	}
-			// });
+		// 	// // BOUNDING BOX
+		// 	// editor.createShape<TLGeoShape>({
+		// 	// 	id: createShapeId(),
+		// 	// 	type: 'geo',
+		// 	// 	isLocked: false,
+		// 	// 	x: location[0],
+		// 	// 	y: location[1],
+		// 	// 	props: {
+		// 	// 		geo: 'rectangle',
+		// 	// 		fill: 'none',
+		// 	// 		size: 's',
+		// 	// 		color: 'grey',
+		// 	// 		w: location[2] - location[0] <= 0 ? 10 : location[2] - location[0],
+		// 	// 		h: location[3] - location[1] <= 0 ? 10 : location[3] - location[1],
+		// 	// 	}
+		// 	// });
 
-			// group all matched shapes
-			if (matched_selected_shapes && groupID) {
-				const isNavigating = editor.getCurrentToolId() === 'select' || editor.getCurrentToolId() === 'hand'
-				if (!isNavigating) {
-					editor.setCurrentTool('select')
-				}
+		// 	// group all matched shapes
+		// 	if (matched_selected_shapes && groupID) {
+		// 		const isNavigating = editor.getCurrentToolId() === 'select' || editor.getCurrentToolId() === 'hand'
+		// 		if (!isNavigating) {
+		// 			editor.setCurrentTool('select')
+		// 		}
 
-				// regroup the groupped shapes
-				// get the first element ofthe matched_selected_shapes and return in list
-				let new_group_shapes = matched_selected_shapes.splice(0, 1) as TLShapeId[]
-				matched_selected_shapes.forEach((shapeId, index) => {
-					const shape = editor.getShape(shapeId)
-					if (shape && shape.type === 'group') {
-						const group = shape as TLGroupShape
-						editor.ungroupShapes([group.id])
-						// new_group_shapes.splice(index, 1)
-					}
-				})
-				// console.log('new_group_shapes\n', new_group_shapes)
+		// 		// regroup the groupped shapes
+		// 		// get the first element ofthe matched_selected_shapes and return in list
+		// 		let new_group_shapes = matched_selected_shapes.splice(0, 1) as TLShapeId[]
+		// 		matched_selected_shapes.forEach((shapeId, index) => {
+		// 			const shape = editor.getShape(shapeId)
+		// 			if (shape && shape.type === 'group') {
+		// 				const group = shape as TLGroupShape
+		// 				editor.ungroupShapes([group.id])
+		// 				// new_group_shapes.splice(index, 1)
+		// 			}
+		// 		})
+		// 		// console.log('new_group_shapes\n', new_group_shapes)
 
-				if (new_group_shapes.length > 0) {
-					// editor.groupShapes(new_group_shapes, groupID)
-					// editor.updateShape<TLGroupShape>({
-					// 	id: groupID,
-					// 	type: 'group',
-					// 	isLocked: false,
-					// 	meta: {
-					// 		shape: shape,
-					// 		annotated_text: annotated_text,
-					// 		location: location,
-					// 		intended_edit: intended_edit || '',
-					// 		contained_shapes: matched_selected_shapes,
-					// 	},
-					// });
-					const closestShape = editor.getShape(new_group_shapes[0])
-					if (closestShape) {
-						editor.updateShape({
-							...closestShape,
-							meta: {
-								shape: shape,
-								annotated_text: annotated_text,
-								location: location,
-								intended_edit: intended_edit || '',
-								contained_shapes: matched_selected_shapes,
-							}
-						})
-						
-						editor.setSelectedShapes([closestShape.id])
-						handleStoreLog({ type: 'end-interpretaion', data: intended_edit || '' })
-					}
-				}
+		// 		if (new_group_shapes.length > 0) {
+		// 			// editor.groupShapes(new_group_shapes, groupID)
+		// 			// editor.updateShape<TLGroupShape>({
+		// 			// 	id: groupID,
+		// 			// 	type: 'group',
+		// 			// 	isLocked: false,
+		// 			// 	meta: {
+		// 			// 		shape: shape,
+		// 			// 		annotated_text: annotated_text,
+		// 			// 		location: location,
+		// 			// 		intended_edit: intended_edit || '',
+		// 			// 		contained_shapes: matched_selected_shapes,
+		// 			// 	},
+		// 			// });
+		// 			const closestShape = editor.getShape(new_group_shapes[0])
+		// 			if (closestShape) {
+		// 				editor.updateShape({
+		// 					...closestShape,
+		// 					meta: {
+		// 						shape: shape,
+		// 						annotated_text: annotated_text,
+		// 						location: location,
+		// 						intended_edit: intended_edit || '',
+		// 						contained_shapes: matched_selected_shapes,
+		// 					}
+		// 				})
 
-				if (!isNavigating) editor.setCurrentTool('draw')
-			}
-		});
+		// 				editor.setSelectedShapes([closestShape.id])
+		// 				handleStoreLog({ type: 'end-interpretaion', data: intended_edit || '' })
+		// 			}
+		// 		}
+
+		// 		if (!isNavigating) editor.setCurrentTool('draw')
+		// 	}
+		// });
+
 
 	} catch (e) {
 		console.error(e)

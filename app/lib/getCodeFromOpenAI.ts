@@ -7,6 +7,7 @@ import {
 } from '../prompt'
 
 export async function getCodeFromOpenAI({
+    interpretation,
     image,
     apiKey,
     text,
@@ -14,6 +15,7 @@ export async function getCodeFromOpenAI({
     previousCodeEditors = [],
     intended_edit,
 }: {
+    interpretation: string
     image: string
     apiKey: string
     text: string
@@ -53,6 +55,13 @@ export async function getCodeFromOpenAI({
             detail: 'high',
         },
     })
+
+    if (interpretation) {
+        userContent.push({
+            type: 'text',
+            text: `The user specified following action to take: "${interpretation}"`,
+        })
+    }
 
     // Add the strings of text
     if (text) {
