@@ -5,9 +5,9 @@
   "acpxSessionId": "",
   "agentSessionId": "",
   "branch": "",
-  "status": "running",
-  "resume_status": "not_attempted",
-  "last_resume_error": "",
+  "status": "failed",
+  "resume_status": "failed",
+  "last_resume_error": "Authentication required\nhint: run `acpx config show` to locate the active config, then add the required credential under `auth` and retry.\n",
   "resumed_from_session_id": "",
   "session_bundle_backend": "",
   "session_bundle_artifact_id": "",
@@ -21,5 +21,5 @@
   "last_comment_url": "",
   "attempt_count": 1,
   "created_at": "2026-05-27T20:04:10.016Z",
-  "updated_at": "2026-05-27T20:04:10.016Z"
+  "updated_at": "2026-05-27T20:04:13.973Z"
 }
