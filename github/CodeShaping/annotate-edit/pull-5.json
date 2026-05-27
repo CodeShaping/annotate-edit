@@ -1,0 +1,124 @@
+{
+  "author": {
+    "is_bot": true,
+    "login": "app/sepo-agent-app"
+  },
+  "baseRefName": "main",
+  "body": "## Summary\n\n- Adds `openai@^6.39.0` to `package.json` dependencies\n- Replaces raw `fetch` calls in `getHtmlFromOpenAI.ts`, `getCodeFromOpenAI.ts`, and `getInterpretationFromAI.ts` with the official OpenAI SDK (`client.chat.completions.create`)\n- Upgrades deprecated `gpt-4-vision-preview` → `gpt-4o` in `getHtmlFromOpenAI.ts`\n- Fixes `generateCode.tsx` and `interpretShapes.tsx` to remove stale `json.error` checks (SDK throws on API errors) and handle `null`-safe content via `?? ''`\n\n## Test plan\n\n- [ ] `npm install` completes without dependency errors\n- [ ] TypeScript build (`npx tsc --noEmit`) passes with no errors\n- [ ] All three OpenAI functions use the SDK client with `dangerouslyAllowBrowser: true`\n- [ ] No references to `gpt-4-vision-preview` remain in the codebase\n- [ ] No raw `fetch` calls to `api.openai.com` remain in lib files\n\nCloses #4\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n",
+  "closedAt": null,
+  "comments": [
+    {
+      "id": "IC_kwDOMNKfpc8AAAABD7Ll0g",
+      "author": {
+        "login": "ryanyen2"
+      },
+      "authorAssociation": "CONTRIBUTOR",
+      "body": "@sepo-agent /orchestrate ",
+      "createdAt": "2026-05-27T20:21:16Z",
+      "includesCreatedEdit": false,
+      "isMinimized": false,
+      "minimizedReason": "",
+      "reactionGroups": [
+        {
+          "content": "THUMBS_UP",
+          "users": {
+            "totalCount": 1
+          }
+        },
+        {
+          "content": "EYES",
+          "users": {
+            "totalCount": 1
+          }
+        }
+      ],
+      "url": "https://github.com/CodeShaping/annotate-edit/pull/5#issuecomment-4558349778",
+      "viewerDidAuthor": false
+    },
+    {
+      "id": "IC_kwDOMNKfpc8AAAABD7MgBw",
+      "author": {
+        "login": "sepo-agent-app"
+      },
+      "authorAssociation": "NONE",
+      "body": "Sepo is dispatching follow-up automation.\n\n| Source | Next | Target | Round | Status |\n| --- | --- | --- | --- | --- |\n| orchestrate | review | PR #5 | 2 / 12 | Dispatched |\n\nReason: agent planner selected review: User invoked /orchestrate on an open, unreviewed PR. The PR migrates raw fetch calls to the OpenAI SDK v6 and upgrades gpt-4-vision-preview to gpt-4o — a review pass is the right next automatic action.\n\n<!-- sepo-agent-handoff state:dispatched created:1779913409333 base64:aGFuZG9mZjpjb2Rlc2hhcGluZy9hbm5vdGF0ZS1lZGl0OjI2NTM2NDg5MjM4Om9yY2hlc3RyYXRlOjU6cmV2aWV3OjU6Mg -->",
+      "createdAt": "2026-05-27T20:23:29Z",
+      "includesCreatedEdit": true,
+      "isMinimized": false,
+      "minimizedReason": "",
+      "reactionGroups": [],
+      "url": "https://github.com/CodeShaping/annotate-edit/pull/5#issuecomment-4558364679",
+      "viewerDidAuthor": true
+    },
+    {
+      "id": "IC_kwDOMNKfpc8AAAABD7NXyA",
+      "author": {
+        "login": "sepo-agent-app"
+      },
+      "authorAssociation": "NONE",
+      "body": "No `agent/rubrics` branch exists for this repository, confirming no rubrics are configured. Here is the rubric review:\n\n---\n\n## Rubrics Review\n\n| Total Score | Verdict | Rubrics Scored |\n| -- | -- | -- |\n| N/A | N/A | 0 |\n\n| Dimension | Rubric | Result | Score | Evidence |\n| -- | -- | -- | -- | -- |\n| — | — | not applicable | N/A | No `agent/rubrics` branch found; no user/team rubrics are configured for this repository |\n\n## Notes\n\n- No rubrics branch (`agent/rubrics`) exists for `CodeShaping/annotate-edit`. The review task was dispatched via `/orchestrate` but there are no active rubrics to score against.\n- To set up rubrics, use the `Agent / Rubrics / Update` workflow or mention `@sepo-agent /rubrics` to initialize the branch.\n\n## Findings\n\n- **INFO:** No rubrics are configured. This review cannot be scored until rubrics are defined. Consider initializing the `agent/rubrics` branch with team preferences (e.g. code style, test coverage requirements, API migration standards).\n- **INFO (observation, not rubric-scored):** The PR correctly migrates all three OpenAI call sites from raw `fetch` to the official SDK v6 (`openai@^6.39.0`), upgrades `gpt-4-vision-preview` → `gpt-4o`, and removes the now-redundant `json.error` guard blocks. The `?? ''` null-coalescing on `content` is appropriate since the SDK types `content` as `string | null`. No behavioral regressions are apparent from the diff.\n\n## Final Rubric Verdict\n\nN/A",
+      "createdAt": "2026-05-27T20:25:17Z",
+      "includesCreatedEdit": false,
+      "isMinimized": false,
+      "minimizedReason": "",
+      "reactionGroups": [],
+      "url": "https://github.com/CodeShaping/annotate-edit/pull/5#issuecomment-4558378952",
+      "viewerDidAuthor": true
+    }
+  ],
+  "createdAt": "2026-05-27T20:19:26Z",
+  "files": [
+    {
+      "path": "app/lib/generateCode.tsx",
+      "additions": 1,
+      "deletions": 6,
+      "changeType": "MODIFIED"
+    },
+    {
+      "path": "app/lib/getCodeFromOpenAI.ts",
+      "additions": 12,
+      "deletions": 77,
+      "changeType": "MODIFIED"
+    },
+    {
+      "path": "app/lib/getHtmlFromOpenAI.ts",
+      "additions": 12,
+      "deletions": 73,
+      "changeType": "MODIFIED"
+    },
+    {
+      "path": "app/lib/getInterpretationFromAI.ts",
+      "additions": 12,
+      "deletions": 85,
+      "changeType": "MODIFIED"
+    },
+    {
+      "path": "app/lib/interpretShapes.tsx",
+      "additions": 1,
+      "deletions": 6,
+      "changeType": "MODIFIED"
+    },
+    {
+      "path": "package-lock.json",
+      "additions": 36,
+      "deletions": 8,
+      "changeType": "MODIFIED"
+    },
+    {
+      "path": "package.json",
+      "additions": 1,
+      "deletions": 0,
+      "changeType": "MODIFIED"
+    }
+  ],
+  "headRefName": "agent/implement-issue-4/claude-26536075716",
+  "labels": [],
+  "mergedAt": null,
+  "number": 5,
+  "reviewDecision": "",
+  "reviews": [],
+  "state": "OPEN",
+  "title": "Update OpenAI API: use SDK v6 and replace legacy gpt-4-vision-preview model",
+  "updatedAt": "2026-05-27T20:25:17Z",
+  "url": "https://github.com/CodeShaping/annotate-edit/pull/5"
+}

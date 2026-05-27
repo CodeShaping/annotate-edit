@@ -1,0 +1,100 @@
+{
+  "author": {
+    "id": "MDQ6VXNlcjQ1Mzg5OTI0",
+    "is_bot": false,
+    "login": "ryanyen2",
+    "name": "Ryan Yen"
+  },
+  "body": "### Goal\n\ninstall latest version of the openai and update the API for calling openai model\n\n### Why\n\nthe current openai model using is legacy model, and there is better model and updated API to connect with; fix dependencies too \n\n### Success criteria\n\n- [ ] no dependencies error\n- [ ] call the API successfully\n\n### Current strategy\n\n_No response_\n\n### Subgoals or child tasks\n\n_No response_\n\n### Related work\n\n_No response_\n\n### Suggested first Sepo action\n\n_No response_",
+  "closedAt": null,
+  "comments": [
+    {
+      "id": "IC_kwDOMNKfpc8AAAABD6zy6A",
+      "author": {
+        "login": "ryanyen2"
+      },
+      "authorAssociation": "CONTRIBUTOR",
+      "body": "@sepo-agent check and update the openai API",
+      "createdAt": "2026-05-27T19:26:52Z",
+      "includesCreatedEdit": false,
+      "isMinimized": false,
+      "minimizedReason": "",
+      "reactionGroups": [
+        {
+          "content": "EYES",
+          "users": {
+            "totalCount": 1
+          }
+        }
+      ],
+      "url": "https://github.com/CodeShaping/annotate-edit/issues/4#issuecomment-4557959912",
+      "viewerDidAuthor": false
+    },
+    {
+      "id": "IC_kwDOMNKfpc8AAAABD7G_YQ",
+      "author": {
+        "login": "sepo-agent-app"
+      },
+      "authorAssociation": "NONE",
+      "body": "I triaged this as a `implement` request.\n\nI'll install the `openai` npm package and refactor the three OpenAI API files to use the official SDK, updating the legacy `gpt-4-vision-preview` model to `gpt-4o`.\n\nReply with:\n\n```text\n@sepo-agent /approve req-c2ee43\n```\n\nto start the implementation workflow.\n\n<!-- sepo-agent-request base64:eyJyb3V0ZSI6ImltcGxlbWVudCIsInNvdXJjZV9raW5kIjoiaXNzdWVfY29tbWVudCIsInRhcmdldF9raW5kIjoiaXNzdWUiLCJ0YXJnZXRfbnVtYmVyIjo0LCJ0YXJnZXRfdXJsIjoiaHR0cHM6Ly9naXRodWIuY29tL0NvZGVTaGFwaW5nL2Fubm90YXRlLWVkaXQvaXNzdWVzLzQiLCJ3b3JrZmxvdyI6ImFnZW50LWltcGxlbWVudC55bWwiLCJyZXF1ZXN0X2lkIjoicmVxLWMyZWU0MyIsInJlcXVlc3RfdGV4dCI6IkBzZXBvLWFnZW50IGNoZWNrIGFuZCB1cGRhdGUgdGhlIG9wZW5haSBBUEkiLCJpc3N1ZV90aXRsZSI6IlVwZGF0ZSBPcGVuQUkgQVBJOiBpbnN0YWxsIFNESyBhbmQgcmVwbGFjZSBsZWdhY3kgbW9kZWwiLCJpc3N1ZV9ib2R5IjoiIyMgR29hbFxuXG5JbnN0YWxsIHRoZSBsYXRlc3QgYG9wZW5haWAgbnBtIHBhY2thZ2UgYW5kIHJlZmFjdG9yIHRoZSBjb2RlYmFzZSB0byB1c2UgdGhlIG9mZmljaWFsIFNESyBpbnN0ZWFkIG9mIHJhdyBgZmV0Y2hgIGNhbGxzLiBBbHNvIHVwZGF0ZSB0aGUgbGVnYWN5IG1vZGVsIHJlZmVyZW5jZS5cblxuIyMgV2hhdCBuZWVkcyB0byBjaGFuZ2VcblxuLSAqKkluc3RhbGwgZGVwZW5kZW5jeSoqOiBhZGQgYG9wZW5haWAgdG8gYHBhY2thZ2UuanNvbmAgZGVwZW5kZW5jaWVzXG4tICoqYGFwcC9saWIvZ2V0SHRtbEZyb21PcGVuQUkudHNgKio6IHJlcGxhY2UgcmF3IGBmZXRjaGAgd2l0aCB0aGUgT3BlbkFJIFNESyBjbGllbnQ7IHVwZGF0ZSBtb2RlbCBmcm9tIGRlcHJlY2F0ZWQgYGdwdC00LXZpc2lvbi1wcmV2aWV3YCDihpIgYGdwdC00b2AgKHdoaWNoIHN1cHBvcnRzIHZpc2lvbiBuYXRpdmVseSlcbi0gKipgYXBwL2xpYi9nZXRDb2RlRnJvbU9wZW5BSS50c2AqKjogcmVwbGFjZSByYXcgYGZldGNoYCB3aXRoIHRoZSBPcGVuQUkgU0RLIGNsaWVudCAobW9kZWwgYWxyZWFkeSBgZ3B0LTRvYCwgbm8gY2hhbmdlIG5lZWRlZClcbi0gKipgYXBwL2xpYi9nZXRJbnRlcnByZXRhdGlvbkZyb21BSS50c2AqKjogcmVwbGFjZSByYXcgYGZldGNoYCB3aXRoIHRoZSBPcGVuQUkgU0RLIGNsaWVudCAobW9kZWwgYWxyZWFkeSBgZ3B0LTRvYCwgbm8gY2hhbmdlIG5lZWRlZClcblxuIyMgQWNjZXB0YW5jZSBjcml0ZXJpYVxuXG4tIFsgXSBgb3BlbmFpYCBwYWNrYWdlIHByZXNlbnQgaW4gYHBhY2thZ2UuanNvbmAgZGVwZW5kZW5jaWVzXG4tIFsgXSBObyByYXcgYGZldGNoYCBjYWxscyB0byBgaHR0cHM6Ly9hcGkub3BlbmFpLmNvbWAgaW4gdGhlIHRocmVlIGxpYiBmaWxlc1xuLSBbIF0gYGdwdC00LXZpc2lvbi1wcmV2aWV3YCByZW1vdmVkOyByZXBsYWNlZCB3aXRoIGBncHQtNG9gXG4tIFsgXSBObyBkZXBlbmRlbmN5IGVycm9ycyAoYG5wbSBpbnN0YWxsYCBzdWNjZWVkcylcbi0gWyBdIFR5cGVTY3JpcHQgdHlwZXMgcmVtYWluIGNvcnJlY3QgKG5vIGBhbnlgIHJlZ3Jlc3Npb25zKVxuXG4jIyBDb250ZXh0XG5cbk9yaWdpbmFsIHJlcXVlc3Q6IGlzc3VlICM0IOKAlCBcImluc3RhbGwgbGF0ZXN0IHZlcnNpb24gb2YgdGhlIG9wZW5haSBhbmQgdXBkYXRlIHRoZSBBUEkgZm9yIGNhbGxpbmcgb3BlbmFpIG1vZGVsOyB0aGUgY3VycmVudCBvcGVuYWkgbW9kZWwgdXNpbmcgaXMgbGVnYWN5IG1vZGVsLlwiXG5cbkZpbGVzIGFmZmVjdGVkOlxuLSBgYXBwL2xpYi9nZXRIdG1sRnJvbU9wZW5BSS50c2AgKGxlZ2FjeSBtb2RlbCArIHJhdyBmZXRjaClcbi0gYGFwcC9saWIvZ2V0Q29kZUZyb21PcGVuQUkudHNgIChyYXcgZmV0Y2ggb25seSlcbi0gYGFwcC9saWIvZ2V0SW50ZXJwcmV0YXRpb25Gcm9tQUkudHNgIChyYXcgZmV0Y2ggb25seSkifQ -->\n\n| Approved by | Action | Tracking |\n|---|---|---|\n| @ryanyen2 | `implement` via `agent-implement.yml` | [approval run](https://github.com/CodeShaping/annotate-edit/actions/runs/26536055678) |\n\n<!-- sepo-agent-approved -->\n",
+      "createdAt": "2026-05-27T20:10:30Z",
+      "includesCreatedEdit": true,
+      "isMinimized": false,
+      "minimizedReason": "",
+      "reactionGroups": [],
+      "url": "https://github.com/CodeShaping/annotate-edit/issues/4#issuecomment-4558274401",
+      "viewerDidAuthor": true
+    },
+    {
+      "id": "IC_kwDOMNKfpc8AAAABD7ICgg",
+      "author": {
+        "login": "ryanyen2"
+      },
+      "authorAssociation": "CONTRIBUTOR",
+      "body": "@sepo-agent /approve req-c2ee43 ",
+      "createdAt": "2026-05-27T20:12:42Z",
+      "includesCreatedEdit": false,
+      "isMinimized": false,
+      "minimizedReason": "",
+      "reactionGroups": [
+        {
+          "content": "THUMBS_UP",
+          "users": {
+            "totalCount": 1
+          }
+        }
+      ],
+      "url": "https://github.com/CodeShaping/annotate-edit/issues/4#issuecomment-4558291586",
+      "viewerDidAuthor": false
+    },
+    {
+      "id": "IC_kwDOMNKfpc8AAAABD7K0sg",
+      "author": {
+        "login": "sepo-agent-app"
+      },
+      "authorAssociation": "NONE",
+      "body": "**Sepo implementation finished**\n\n- Branch: `agent/implement-issue-4/claude-26536075716`\n- Pull request: https://github.com/CodeShaping/annotate-edit/pull/5\n- Approval: https://github.com/CodeShaping/annotate-edit/issues/4#issuecomment-4558291586\n\nInstalled the openai npm package (v6.39.0) and refactored all three OpenAI API lib files to use the official SDK instead of raw fetch calls. Updated getHtmlFromOpenAI.ts to use gpt-4o (replacing the deprecated gpt-4-vision-preview), and replaced raw fetch in getCodeFromOpenAI.ts and getInterpretationFromAI.ts. Also fixed the callers (generateCode.tsx and interpretShapes.tsx) to remove the now-unnecessary json.error checks and handle the SDK's typed null-safe content field. TypeScript type check passes with zero errors.",
+      "createdAt": "2026-05-27T20:19:28Z",
+      "includesCreatedEdit": false,
+      "isMinimized": false,
+      "minimizedReason": "",
+      "reactionGroups": [],
+      "url": "https://github.com/CodeShaping/annotate-edit/issues/4#issuecomment-4558337202",
+      "viewerDidAuthor": true
+    }
+  ],
+  "createdAt": "2026-05-27T18:13:59Z",
+  "labels": [
+    {
+      "id": "LA_kwDOMNKfpc8AAAACk154Bw",
+      "name": "agent-goal",
+      "description": "Marks an issue as a repository-level goal for Sepo planning",
+      "color": "5319e7"
+    }
+  ],
+  "number": 4,
+  "state": "OPEN",
+  "title": "Goal: update API connection to the latest",
+  "updatedAt": "2026-05-27T20:19:28Z",
+  "url": "https://github.com/CodeShaping/annotate-edit/issues/4"
+}

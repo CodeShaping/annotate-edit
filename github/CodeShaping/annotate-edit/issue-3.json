@@ -35,6 +35,28 @@
       "reactionGroups": [],
       "url": "https://github.com/CodeShaping/annotate-edit/issues/3#issuecomment-4550134026",
       "viewerDidAuthor": true
+    },
+    {
+      "id": "IC_kwDOMNKfpc8AAAABD7DoSg",
+      "author": {
+        "login": "ryanyen2"
+      },
+      "authorAssociation": "CONTRIBUTOR",
+      "body": "@sepo-agent /answer Is Sepo configured correctly in this repository?",
+      "createdAt": "2026-05-27T20:03:13Z",
+      "includesCreatedEdit": false,
+      "isMinimized": false,
+      "minimizedReason": "",
+      "reactionGroups": [
+        {
+          "content": "EYES",
+          "users": {
+            "totalCount": 1
+          }
+        }
+      ],
+      "url": "https://github.com/CodeShaping/annotate-edit/issues/3#issuecomment-4558219338",
+      "viewerDidAuthor": false
     }
   ],
   "createdAt": "2026-05-27T00:14:57Z",
@@ -42,6 +64,6 @@
   "number": 3,
   "state": "OPEN",
   "title": "Sepo setup check",
-  "updatedAt": "2026-05-27T00:18:10Z",
+  "updatedAt": "2026-05-27T20:03:13Z",
   "url": "https://github.com/CodeShaping/annotate-edit/issues/3"
 }
