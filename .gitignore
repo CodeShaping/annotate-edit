@@ -46,3 +46,7 @@ __pycache__/
 
 # vscode
 .vscode/
+
+# Sepo generated files
+.agent/dist/
+.agent/node_modules/
