@@ -1,0 +1,47 @@
+{
+  "author": {
+    "is_bot": true,
+    "login": "app/sepo-agent-app"
+  },
+  "body": "Use this issue to track Sepo setup for this repository.\n\nThe latest setup status is maintained in the comment below.\n",
+  "closedAt": null,
+  "comments": [
+    {
+      "id": "IC_kwDOMNKfpc8AAAABDzVWJA",
+      "author": {
+        "login": "sepo-agent-app"
+      },
+      "authorAssociation": "NONE",
+      "body": "<!-- sepo-agent-installation-bootstrap -->\nThe Sepo GitHub App was installed on **CodeShaping/annotate-edit**, but automatic onboarding did not start.\n\n- **Repository:** `CodeShaping/annotate-edit`\n- **Default branch:** `main`\n- **Reason:** .github/workflows/agent-onboarding.yml not found on main\n\n**Next steps:**\n\n1. Confirm `.github/workflows/agent-onboarding.yml` exists on `main`.\n2. Enable GitHub Actions for this repository.\n3. Confirm App permissions: `Contents: read`, `Actions: write`, `Issues: write`.\n4. Configure `OPENAI_API_KEY` or `CLAUDE_CODE_OAUTH_TOKEN` as repository secrets.\n5. Manually run **Agent / Onboarding / Check Setup** via Actions.",
+      "createdAt": "2026-05-27T00:14:58Z",
+      "includesCreatedEdit": false,
+      "isMinimized": false,
+      "minimizedReason": "",
+      "reactionGroups": [],
+      "url": "https://github.com/CodeShaping/annotate-edit/issues/3#issuecomment-4550120996",
+      "viewerDidAuthor": true
+    },
+    {
+      "id": "IC_kwDOMNKfpc8AAAABDzWJCg",
+      "author": {
+        "login": "sepo-agent-app"
+      },
+      "authorAssociation": "NONE",
+      "body": "<!-- sepo-agent-onboarding-check -->\n## Sepo setup status\n\n### Current status\n\n- [x] GitHub App/auth: resolved via `oidc_broker`\n- [x] Model credentials: `OPENAI_API_KEY` configured\n  - Agent provider: `codex` (OPENAI_API_KEY is configured)\n- [ ] Memory: not initialized\n  - Run **[Actions > Agent / Memory / Initialization](https://github.com/CodeShaping/annotate-edit/actions/workflows/agent-memory-bootstrap.yml)**.\n- [ ] Rubrics: not initialized\n  - Optional: run **[Actions > Agent / Rubrics / Initialization](https://github.com/CodeShaping/annotate-edit/actions/workflows/agent-rubrics-initialization.yml)**.\n\n### Remaining setup\n\n- [ ] Run [Agent / Memory / Initialization](https://github.com/CodeShaping/annotate-edit/actions/workflows/agent-memory-bootstrap.yml) to initialize memory branch `agent/memory`.\n- [ ] Optional: run [Agent / Rubrics / Initialization](https://github.com/CodeShaping/annotate-edit/actions/workflows/agent-rubrics-initialization.yml) to initialize rubrics branch `agent/rubrics`.\n\n### Test Sepo\n\nAfter setup, try:\n\n```md\n@sepo-agent /answer Is Sepo configured correctly in this repository?\n```\n\nTry implementation:\n\n```md\n@sepo-agent /implement Create a small README update that verifies the agent can open a PR.\n```\n\nOn an open pull request:\n\n```md\n@sepo-agent /review\n```\n\nLast checked: [GitHub Actions run](https://github.com/CodeShaping/annotate-edit/actions/runs/26482816947)\n",
+      "createdAt": "2026-05-27T00:18:10Z",
+      "includesCreatedEdit": false,
+      "isMinimized": false,
+      "minimizedReason": "",
+      "reactionGroups": [],
+      "url": "https://github.com/CodeShaping/annotate-edit/issues/3#issuecomment-4550134026",
+      "viewerDidAuthor": true
+    }
+  ],
+  "createdAt": "2026-05-27T00:14:57Z",
+  "labels": [],
+  "number": 3,
+  "state": "OPEN",
+  "title": "Sepo setup check",
+  "updatedAt": "2026-05-27T00:18:10Z",
+  "url": "https://github.com/CodeShaping/annotate-edit/issues/3"
+}
