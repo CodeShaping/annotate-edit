@@ -91,10 +91,6 @@ export async function generateCode(
 			intended_edit,
 		});
 
-		if (!json) {
-			throw Error('Could not contact OpenAI.')
-		}
-
 		let message = json.choices[0].message.content ?? ''
 		const regex = /```json\n([\s\S]*?)```/;
 		const matches = message.match(regex);

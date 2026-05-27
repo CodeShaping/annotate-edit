@@ -27,6 +27,7 @@ export async function getHtmlFromOpenAI({
 }) {
 	if (!apiKey) throw Error('You need to provide an API key (sorry)')
 
+	// Client-side demo app; apiKey is user-supplied at runtime, mirroring the prior raw-fetch Authorization header pattern.
 	const client = new OpenAI({ apiKey, dangerouslyAllowBrowser: true })
 
 	const messages: OpenAI.Chat.ChatCompletionMessageParam[] = [
