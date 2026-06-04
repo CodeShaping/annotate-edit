@@ -132,16 +132,7 @@ export async function interpretShapes(editor: Editor, apiKey: string, codeShapeI
 
 		handleStoreLog({ type: 'start-interpretation', data: dataUrl })
 
-		if (!json) {
-			throw Error('Could not contact OpenAI.')
-		}
-
-		if (json?.error) {
-			throw Error(`${json.error.message?.slice(0, 128)}...`)
-		}
-
-
-		let message = json.choices[0].message.content
+		let message = json.choices[0].message.content ?? ''
 		const regex = /```json\n([\s\S]*?)```/;
 		const matches = message.match(regex);
 		if (matches && matches[1]) {

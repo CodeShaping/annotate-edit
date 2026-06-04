@@ -1,3 +1,4 @@
+import OpenAI from 'openai'
 import { CodeEditorShape } from '../CodeEditorShape/CodeEditorShape'
 import {
     OPENAI_INTERPRETATION_SKETCH_PROMPT,
@@ -23,7 +24,10 @@ export async function getInterpretationFromAI({
 }) {
     if (!apiKey) throw Error('You need to provide an API key (sorry)')
 
-    const messages: GPT4oCompletionRequest['messages'] = [
+    // Client-side demo app; apiKey is user-supplied at runtime, mirroring the prior raw-fetch Authorization header pattern.
+    const client = new OpenAI({ apiKey, dangerouslyAllowBrowser: true })
+
+    const messages: OpenAI.Chat.ChatCompletionMessageParam[] = [
         {
             role: 'system',
             content: OPENAI_INTERPRETATION_SKETCH_PROMPT,
@@ -34,14 +38,13 @@ export async function getInterpretationFromAI({
         },
     ]
 
-    const userContent = messages[1].content as Exclude<MessageContent, string>
+    const userContent = messages[1].content as OpenAI.Chat.ChatCompletionContentPart[]
 
     userContent.push({
         type: 'text',
         text: OPENAI_USER_INTERPRETATION_SKETCH_PROMPT,
     })
 
-    // Add the image
     userContent.push({
         type: 'image_url',
         image_url: {
@@ -50,7 +53,6 @@ export async function getInterpretationFromAI({
         },
     })
 
-
     if (text) {
         userContent.push({
             type: 'text',
@@ -58,14 +60,6 @@ export async function getInterpretationFromAI({
         })
     }
 
-    // if (grid) {
-    // 	userContent.push({
-    // 		type: 'text',
-    // 		text: `The user have a ${grid.color} grid overlaid on top. Each cell of the grid is ${grid.size}x${grid.size}px.`,
-    // 	})
-    // }
-
-    // 
     userContent.push(
         {
             type: 'text',
@@ -73,82 +67,16 @@ export async function getInterpretationFromAI({
         }
     )
 
-    // Prompt the theme
-    // userContent.push({
-    // 	type: 'text',
-    // 	text: `Please make your result use the ${theme} theme.`,
-    // })
-
-    const body: GPT4oCompletionRequest = {
-        model: 'gpt-4o',
-        max_tokens: 4096,
-        temperature: 1,
-        messages,
-        seed: 42,
-        n: 1,
-    }
-
-    let json = null
-
     try {
-        const resp = await fetch('https://api.openai.com/v1/chat/completions', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${apiKey}`,
-            },
-            body: JSON.stringify(body),
+        return await client.chat.completions.create({
+            model: 'gpt-4o',
+            max_tokens: 4096,
+            temperature: 1,
+            messages,
+            seed: 42,
+            n: 1,
         })
-        json = await resp.json()
-        // console.log(json)
     } catch (e: any) {
         throw Error(`Could not contact OpenAI: ${e.message}`)
     }
-
-    return json
-}
-
-type MessageContent =
-    | string
-    | (
-        | string
-        | {
-            type: 'image_url'
-            image_url:
-            | string
-            | {
-                url: string
-                detail: 'low' | 'high' | 'auto'
-            }
-        }
-        | {
-            type: 'text'
-            text: string
-        }
-    )[]
-
-export type GPT4oCompletionRequest = {
-    model: 'gpt-4o' | 'gpt-4o-mini' | 'gpt-4-turbo'
-    messages: {
-        role: 'system' | 'user' | 'assistant' | 'function'
-        content: MessageContent
-        name?: string | undefined
-    }[]
-    functions?: any[] | undefined
-    function_call?: any | undefined
-    stream?: boolean | undefined
-    temperature?: number | undefined
-    top_p?: number | undefined
-    max_tokens?: number | undefined
-    n?: number | undefined
-    best_of?: number | undefined
-    frequency_penalty?: number | undefined
-    presence_penalty?: number | undefined
-    seed?: number | undefined
-    logit_bias?:
-    | {
-        [x: string]: number
-    }
-    | undefined
-    stop?: (string[] | string) | undefined
 }

@@ -1,3 +1,4 @@
+import OpenAI from 'openai'
 import { CodeEditorShape } from '../CodeEditorShape/CodeEditorShape'
 import {
     OPENAI_MAKE_CODE_PROMPT,
@@ -29,7 +30,10 @@ export async function getCodeFromOpenAI({
 }) {
     if (!apiKey) throw Error('You need to provide an API key (sorry)')
 
-    const messages: GPT4oCompletionRequest['messages'] = [
+    // Client-side demo app; apiKey is user-supplied at runtime, mirroring the prior raw-fetch Authorization header pattern.
+    const client = new OpenAI({ apiKey, dangerouslyAllowBrowser: true })
+
+    const messages: OpenAI.Chat.ChatCompletionMessageParam[] = [
         {
             role: 'system',
             content: intended_edit?.length ? OPENAI_EDIT_PARTIAL_CODE_PROMPT : OPENAI_MAKE_CODE_PROMPT,
@@ -40,14 +44,13 @@ export async function getCodeFromOpenAI({
         },
     ]
 
-    const userContent = messages[1].content as Exclude<MessageContent, string>
+    const userContent = messages[1].content as OpenAI.Chat.ChatCompletionContentPart[]
 
     userContent.push({
         type: 'text',
         text: intended_edit?.length ? OPENAI_USER_EDIT_PARTIAL_CODE_PROMPT : OPENAI_USER_MAKE_CODE_PROMPT,
     })
 
-    // Add the image
     userContent.push({
         type: 'image_url',
         image_url: {
@@ -63,7 +66,6 @@ export async function getCodeFromOpenAI({
         })
     }
 
-    // Add the strings of text
     if (text) {
         userContent.push({
             type: 'text',
@@ -78,7 +80,6 @@ export async function getCodeFromOpenAI({
         })
     }
 
-    // Add the previous previews code
     for (let i = 0; i < previousCodeEditors.length; i++) {
         const preview = previousCodeEditors[i]
         userContent.push({
@@ -94,81 +95,16 @@ export async function getCodeFromOpenAI({
         })
     }
 
-    // Prompt the theme
-    // userContent.push({
-    // 	type: 'text',
-    // 	text: `Please make your result use the ${theme} theme.`,
-    // })
-
-    const body: GPT4oCompletionRequest = {
-        model: 'gpt-4o',
-        max_tokens: 4096,
-        temperature: 0,
-        messages,
-        seed: 42,
-        n: 1,
-    }
-
-    let json = null
-
     try {
-        const resp = await fetch('https://api.openai.com/v1/chat/completions', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${apiKey}`,
-            },
-            body: JSON.stringify(body),
+        return await client.chat.completions.create({
+            model: 'gpt-4o',
+            max_tokens: 4096,
+            temperature: 0,
+            messages,
+            seed: 42,
+            n: 1,
         })
-        json = await resp.json()
     } catch (e: any) {
         throw Error(`Could not contact OpenAI: ${e.message}`)
     }
-
-    return json
-}
-
-type MessageContent =
-    | string
-    | (
-        | string
-        | {
-            type: 'image_url'
-            image_url:
-            | string
-            | {
-                url: string
-                detail: 'low' | 'high' | 'auto'
-            }
-        }
-        | {
-            type: 'text'
-            text: string
-        }
-    )[]
-
-export type GPT4oCompletionRequest = {
-    model: 'gpt-4o'
-    messages: {
-        role: 'system' | 'user' | 'assistant' | 'function'
-        content: MessageContent
-        name?: string | undefined
-    }[]
-    functions?: any[] | undefined
-    function_call?: any | undefined
-    stream?: boolean | undefined
-    temperature?: number | undefined
-    top_p?: number | undefined
-    max_tokens?: number | undefined
-    n?: number | undefined
-    best_of?: number | undefined
-    frequency_penalty?: number | undefined
-    presence_penalty?: number | undefined
-    seed?: number | undefined
-    logit_bias?:
-    | {
-        [x: string]: number
-    }
-    | undefined
-    stop?: (string[] | string) | undefined
 }
