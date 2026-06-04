@@ -6,7 +6,7 @@
     "name": "Ryan Yen"
   },
   "body": "### Goal\n\ninstall latest version of the openai and update the API for calling openai model\n\n### Why\n\nthe current openai model using is legacy model, and there is better model and updated API to connect with; fix dependencies too \n\n### Success criteria\n\n- [ ] no dependencies error\n- [ ] call the API successfully\n\n### Current strategy\n\n_No response_\n\n### Subgoals or child tasks\n\n_No response_\n\n### Related work\n\n_No response_\n\n### Suggested first Sepo action\n\n_No response_",
-  "closedAt": null,
+  "closedAt": "2026-06-04T01:32:17Z",
   "comments": [
     {
       "id": "IC_kwDOMNKfpc8AAAABD6zy6A",
@@ -93,8 +93,8 @@
     }
   ],
   "number": 4,
-  "state": "OPEN",
+  "state": "CLOSED",
   "title": "Goal: update API connection to the latest",
-  "updatedAt": "2026-05-27T20:19:28Z",
+  "updatedAt": "2026-06-04T01:32:17Z",
   "url": "https://github.com/CodeShaping/annotate-edit/issues/4"
 }

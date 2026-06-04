@@ -5,7 +5,7 @@
   },
   "baseRefName": "main",
   "body": "## Summary\n\n- Adds `openai@^6.39.0` to `package.json` dependencies\n- Replaces raw `fetch` calls in `getHtmlFromOpenAI.ts`, `getCodeFromOpenAI.ts`, and `getInterpretationFromAI.ts` with the official OpenAI SDK (`client.chat.completions.create`)\n- Upgrades deprecated `gpt-4-vision-preview` → `gpt-4o` in `getHtmlFromOpenAI.ts`\n- Fixes `generateCode.tsx` and `interpretShapes.tsx` to remove stale `json.error` checks (SDK throws on API errors) and handle `null`-safe content via `?? ''`\n\n## Test plan\n\n- [ ] `npm install` completes without dependency errors\n- [ ] TypeScript build (`npx tsc --noEmit`) passes with no errors\n- [ ] All three OpenAI functions use the SDK client with `dangerouslyAllowBrowser: true`\n- [ ] No references to `gpt-4-vision-preview` remain in the codebase\n- [ ] No raw `fetch` calls to `api.openai.com` remain in lib files\n\nCloses #4\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n",
-  "closedAt": null,
+  "closedAt": "2026-06-04T01:32:16Z",
   "comments": [
     {
       "id": "IC_kwDOMNKfpc8AAAABD7Ll0g",
@@ -154,6 +154,21 @@
       "reactionGroups": [],
       "url": "https://github.com/CodeShaping/annotate-edit/pull/5#issuecomment-4558503231",
       "viewerDidAuthor": true
+    },
+    {
+      "id": "IC_kwDOMNKfpc8AAAABE0PYYA",
+      "author": {
+        "login": "sepo-agent-app"
+      },
+      "authorAssociation": "NONE",
+      "body": "## Rubrics Update\n\nNo changes were committed to [`agent/rubrics`](https://github.com/CodeShaping/annotate-edit/tree/agent/rubrics) from PR #5.\n\n**Analysis complete.**\n\nThe PR #5 conversation has:\n- **`ryanyen2`** (`author_association: CONTRIBUTOR`) — only comment is `@sepo-agent /orchestrate`, a trigger command, not an expression of preference\n- **`sepo-agent-app[bot]`** (`NONE`) — all review feedback, advisory-only per rubric learning rules\n\nNo trusted contributor (OWNER/MEMBER/COLLABORATOR) expressed any durable preference. The `ryanyen2` exception for `Requested by` actors only applies when they explicitly request a rubric addition/update — this was a simple orchestration trigger, not a preference statement. All substantive review feedback came from the bot and doesn't qualify as a user/team preference.\n\n**no rubric changes**\n",
+      "createdAt": "2026-06-04T01:33:39Z",
+      "includesCreatedEdit": false,
+      "isMinimized": false,
+      "minimizedReason": "",
+      "reactionGroups": [],
+      "url": "https://github.com/CodeShaping/annotate-edit/pull/5#issuecomment-4618180704",
+      "viewerDidAuthor": true
     }
   ],
   "createdAt": "2026-05-27T20:19:26Z",
@@ -203,7 +218,7 @@
   ],
   "headRefName": "agent/implement-issue-4/claude-26536075716",
   "labels": [],
-  "mergedAt": null,
+  "mergedAt": "2026-06-04T01:32:16Z",
   "number": 5,
   "reviewDecision": "",
   "reviews": [
@@ -238,8 +253,8 @@
       }
     }
   ],
-  "state": "OPEN",
+  "state": "MERGED",
   "title": "Update OpenAI API: use SDK v6 and replace legacy gpt-4-vision-preview model",
-  "updatedAt": "2026-05-27T20:42:04Z",
+  "updatedAt": "2026-06-04T01:33:39Z",
   "url": "https://github.com/CodeShaping/annotate-edit/pull/5"
 }
