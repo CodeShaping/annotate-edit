@@ -1,15 +1,15 @@
 {
   "schema_version": 1,
   "repo_slug": "CodeShaping/annotate-edit",
-  "last_sync_at": "2026-09-02T16:39:39Z",
+  "last_sync_at": "2026-09-02T21:06:58Z",
   "last_activity_at": "2026-06-04T01:33:39Z",
   "cursors": {
-    "issues": "2026-09-02T16:39:39Z",
-    "pulls": "2026-09-02T16:39:39Z",
-    "discussions": "2026-09-02T16:39:39Z",
-    "commits": "2026-09-02T16:39:39Z"
+    "issues": "2026-09-02T21:06:58Z",
+    "pulls": "2026-09-02T21:06:58Z",
+    "discussions": "2026-09-02T21:06:58Z",
+    "commits": "2026-09-02T21:06:58Z"
   },
-  "last_run_url": "https://github.com/CodeShaping/annotate-edit/actions/runs/33656233692",
+  "last_run_url": "https://github.com/CodeShaping/annotate-edit/actions/runs/33683258102",
   "created_at": "2026-05-27T01:04:44.860Z",
-  "updated_at": "2026-09-02T16:39:41.634Z"
+  "updated_at": "2026-09-02T21:07:00.010Z"
 }
